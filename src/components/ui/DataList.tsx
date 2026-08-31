@@ -5,6 +5,8 @@ interface DataListProps {
   /** When set, renders a `+ 더보기` row at the bottom. */
   onLoadMore?: () => void
   loadMoreLabel?: string
+  /** Grow to fill the card body and pin the `+ 더보기` row to the bottom edge. */
+  fill?: boolean
   className?: string
 }
 
@@ -13,15 +15,23 @@ function DataList({
   children,
   onLoadMore,
   loadMoreLabel = '+ 더보기',
+  fill = false,
   className,
 }: DataListProps) {
   return (
-    <div className={['flex flex-col', className ?? ''].filter(Boolean).join(' ')}>
+    <div
+      className={['flex flex-col', fill ? 'flex-1' : '', className ?? '']
+        .filter(Boolean)
+        .join(' ')}
+    >
       {children}
       {onLoadMore && (
         <button
           type="button"
-          className="text-[16px] lg:text-[20px] text-w-ink bg-w-panel border border-w-line border-t-0 p-4 cursor-pointer hover:bg-w-row"
+          className={[
+            'text-[16px] lg:text-[20px] text-w-ink bg-w-panel border border-w-line p-4 cursor-pointer hover:bg-w-row',
+            fill ? 'mt-auto' : 'border-t-0',
+          ].join(' ')}
           onClick={onLoadMore}
         >
           {loadMoreLabel}
