@@ -50,17 +50,17 @@ function LoginPanel({ title, showSocialLogin = false, onSubmit }: LoginPanelProp
           <div className="flex gap-8">
             <button
               type="button"
-              className="w-[59px] h-[59px] rounded-full bg-[#9e9e9e] border-0 cursor-pointer"
+              className="w-[59px] h-[59px] rounded-full bg-w-social border-0 cursor-pointer"
               aria-label="간편로그인 1"
             />
             <button
               type="button"
-              className="w-[59px] h-[59px] rounded-full bg-[#9e9e9e] border-0 cursor-pointer"
+              className="w-[59px] h-[59px] rounded-full bg-w-social border-0 cursor-pointer"
               aria-label="간편로그인 2"
             />
             <button
               type="button"
-              className="w-[59px] h-[59px] rounded-full bg-[#9e9e9e] border-0 cursor-pointer"
+              className="w-[59px] h-[59px] rounded-full bg-w-social border-0 cursor-pointer"
               aria-label="간편로그인 3"
             />
           </div>

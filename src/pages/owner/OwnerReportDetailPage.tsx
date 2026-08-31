@@ -11,6 +11,11 @@ import { currentStore, getReport } from '../../data/mock'
 /** 운영보고서 상세 (사업자 로그인 — 수정 / 삭제 / 공개 설정). */
 function OwnerReportDetailPage() {
   const { reportId } = useParams()
+  // Remount on report change so the edit/publish state is seeded fresh.
+  return <OwnerReportDetail key={reportId} reportId={reportId} />
+}
+
+function OwnerReportDetail({ reportId }: { reportId: string | undefined }) {
   const navigate = useNavigate()
   const report = getReport(reportId)
 

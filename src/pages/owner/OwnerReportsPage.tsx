@@ -37,7 +37,6 @@ function OwnerReportsPage() {
         variant="owner"
         onOpen={(report) => navigate(`/owner/reports/${report.id}`)}
         onTogglePublish={togglePublish}
-        onLoadMore={() => undefined}
       />
     </PageContainer>
   )

@@ -64,6 +64,7 @@ function StoreSearchCard({ onSearch }: StoreSearchCardProps) {
           type="text"
           className="w-full h-[50px] px-4 [font:inherit] [letter-spacing:inherit] text-[15px] text-w-ink bg-w-field border border-w-line rounded-[7px] placeholder:text-w-placeholder focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-w-ink"
           placeholder="신규 점포의 특별한 조건이 있다면 입력해주세요."
+          aria-label="신규 점포 추가 조건"
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
         />

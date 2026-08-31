@@ -34,7 +34,6 @@ function StoreDirectoryPage({ title, stores }: StoreDirectoryPageProps) {
       <StoreList
         stores={stores}
         onSelect={(store) => navigate(`/enterprise/stores/${store.id}/reports`)}
-        onLoadMore={() => undefined}
       />
     </PageContainer>
   )

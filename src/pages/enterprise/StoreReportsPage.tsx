@@ -35,7 +35,6 @@ function StoreReportsPage() {
         onOpen={(report) =>
           navigate(`/enterprise/stores/${store.id}/reports/${report.id}`)
         }
-        onLoadMore={() => undefined}
       />
     </PageContainer>
   )
