@@ -43,6 +43,7 @@ function OwnerReportDetailPage() {
 
       <ConfirmDialog
         open={confirmOpen}
+        ariaLabel="보고서 삭제"
         lines={['보고서를 삭제하면 복구되지 않습니다.', '삭제하시겠습니까?']}
         onCancel={() => setConfirmOpen(false)}
         onConfirm={() => {

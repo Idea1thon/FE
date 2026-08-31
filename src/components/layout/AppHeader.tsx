@@ -75,6 +75,7 @@ function AppHeader() {
 
       <ConfirmDialog
         open={confirmDeleteOpen}
+        ariaLabel="점포 삭제"
         lines={['점포를 삭제하면 복구되지 않습니다.', '삭제하시겠습니까?']}
         onCancel={() => setConfirmDeleteOpen(false)}
         onConfirm={() => setConfirmDeleteOpen(false)}

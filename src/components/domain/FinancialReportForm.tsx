@@ -6,6 +6,7 @@ interface FinancialReportFormProps {
   onChange: (key: string, value: string) => void
 }
 
+/** Stable map key for a field's value (human-readable — used only as an object key). */
 function fieldKey(sectionIndex: number, groupTitle: string, field: string) {
   return `${sectionIndex}.${groupTitle}.${field}`
 }
@@ -21,9 +22,16 @@ const GRID_COLS: Record<number, string> = {
 function FinancialReportForm({ values, onChange }: FinancialReportFormProps) {
   const idPrefix = useId()
 
-  const renderField = (sectionIndex: number, groupTitle: string, field: string) => {
+  const renderField = (
+    sectionIndex: number,
+    groupIndex: number,
+    groupTitle: string,
+    fieldIndex: number,
+    field: string,
+  ) => {
     const key = fieldKey(sectionIndex, groupTitle, field)
-    const id = `${idPrefix}-${key}`
+    // Index-based id — the human labels contain spaces, which are invalid in an HTML id.
+    const id = `${idPrefix}-${sectionIndex}-${groupIndex}-${fieldIndex}`
     return (
       <div key={field} className="flex items-center justify-between gap-3">
         <label htmlFor={id} className="flex-auto text-[15px] text-w-ink [word-break:keep-all]">
@@ -58,7 +66,9 @@ function FinancialReportForm({ values, onChange }: FinancialReportFormProps) {
               <span className="text-[22px] font-medium leading-[1.3] text-w-ink [word-break:keep-all]">
                 {group.title}
               </span>
-              {group.fields.map((field) => renderField(sectionIndex, group.title, field))}
+              {group.fields.map((field, fieldIndex) =>
+                renderField(sectionIndex, 0, group.title, fieldIndex, field),
+              )}
             </div>
           )
         }
@@ -66,7 +76,7 @@ function FinancialReportForm({ values, onChange }: FinancialReportFormProps) {
         // Stacked sections — group title on the left, its field grid on the right.
         return (
           <div key={sectionIndex} className={`flex flex-wrap gap-x-12 gap-y-6 ${pad} ${divider}`}>
-            {section.groups.map((group) => (
+            {section.groups.map((group, groupIndex) => (
               <div
                 key={group.title}
                 role="group"
@@ -79,7 +89,9 @@ function FinancialReportForm({ values, onChange }: FinancialReportFormProps) {
                 <div
                   className={`flex-auto grid grid-cols-1 gap-x-8 gap-y-3 ${GRID_COLS[group.columns ?? 1]}`}
                 >
-                  {group.fields.map((field) => renderField(sectionIndex, group.title, field))}
+                  {group.fields.map((field, fieldIndex) =>
+                    renderField(sectionIndex, groupIndex, group.title, fieldIndex, field),
+                  )}
                 </div>
               </div>
             ))}
