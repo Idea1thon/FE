@@ -22,10 +22,12 @@ function OwnerDashboardPage() {
   return (
     <PageContainer>
       <DashboardGrid
+        stretch
         left={
           <>
             <RiskSummaryCard percent="OO%" />
             <OperationReportCard
+              fill
               reports={reports}
               onCreate={() => navigate('/owner/reports/new')}
               onOpen={(report) => navigate(`/owner/reports/${report.id}`)}
@@ -37,7 +39,7 @@ function OwnerDashboardPage() {
         right={
           <>
             <StoreSearchCard onSearch={() => navigate('/owner/location-analysis')} />
-            <SolutionCards />
+            <SolutionCards fill />
           </>
         }
       />

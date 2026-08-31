@@ -10,16 +10,26 @@ interface StoreRankingCardProps {
   stores: StoreSummary[]
   onSelect?: (store: StoreSummary) => void
   onLoadMore?: () => void
+  /** Stretch the card to fill a stretched dashboard column (bottom edges align). */
+  fill?: boolean
 }
 
 /** Dashboard card: 매출 TOP 점포 랭킹 / 집중 관리 필요 점포 — region dropdown + store list. */
-function StoreRankingCard({ title, stores, onSelect, onLoadMore }: StoreRankingCardProps) {
+function StoreRankingCard({
+  title,
+  stores,
+  onSelect,
+  onLoadMore,
+  fill = false,
+}: StoreRankingCardProps) {
   const [region, setRegion] = useState(REGION_OPTIONS[0].value)
 
   return (
     <Card
       title={title}
       flush
+      fill={fill}
+      className={fill ? 'flex-1' : undefined}
       action={
         <Select
           variant="inline"
@@ -30,7 +40,7 @@ function StoreRankingCard({ title, stores, onSelect, onLoadMore }: StoreRankingC
         />
       }
     >
-      <StoreList stores={stores} onSelect={onSelect} onLoadMore={onLoadMore} />
+      <StoreList stores={stores} onSelect={onSelect} onLoadMore={onLoadMore} fill={fill} />
     </Card>
   )
 }

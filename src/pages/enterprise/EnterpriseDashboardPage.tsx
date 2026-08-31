@@ -17,6 +17,7 @@ function EnterpriseDashboardPage() {
   return (
     <PageContainer>
       <DashboardGrid
+        stretch
         left={
           <>
             <StoreSearchCard onSearch={() => navigate('/enterprise/location-analysis')} />
@@ -25,16 +26,18 @@ function EnterpriseDashboardPage() {
               stores={rankingStores.slice(0, 5)}
               onSelect={openStoreReports}
               onLoadMore={() => navigate('/enterprise/ranking')}
+              fill
             />
           </>
         }
         right={
-          <RiskSummaryCard percent="OO%">
+          <RiskSummaryCard percent="OO%" fill>
             <StoreRankingCard
               title="집중 관리 필요 점포"
               stores={focusStores.slice(0, 5)}
               onSelect={openStoreReports}
               onLoadMore={() => navigate('/enterprise/focus-stores')}
+              fill
             />
           </RiskSummaryCard>
         }
