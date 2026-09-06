@@ -1,22 +1,66 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Icon from '../ui/Icon'
 import NotificationModal from '../modals/NotificationModal'
 import MyPageModal from '../modals/MyPageModal'
-import ConfirmDialog from '../modals/ConfirmDialog'
 import { useSession } from '../../session/useSession'
-import { notifications } from '../../data/mock'
+import * as api from '../../api'
 
 /** Global top bar: 서비스명 + 알림 벨 + 마이페이지. */
 function AppHeader() {
   const { role } = useSession()
   const navigate = useNavigate()
   const [notifOpen, setNotifOpen] = useState(false)
+  const [notificationItems, setNotificationItems] = useState<api.NotificationItem[]>([])
+  const [unreadCount, setUnreadCount] = useState(0)
+  const [notificationLoading, setNotificationLoading] = useState(role !== null)
+  const [notificationError, setNotificationError] = useState<string | null>(null)
   const [myPageOpen, setMyPageOpen] = useState(false)
-  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
 
-  const hasNotifications = notifications.length > 0
+  const hasNotifications = unreadCount > 0
   const home = role === 'owner' ? '/owner' : '/enterprise'
+
+  useEffect(() => {
+    if (!role) return
+    let active = true
+    api
+      .fetchNotifications({ limit: 20 })
+      .then((response) => {
+        if (!active) return
+        setNotificationItems(response.items)
+        setUnreadCount(response.unread_count)
+        setNotificationError(null)
+      })
+      .catch((cause: unknown) => {
+        if (!active) return
+        setNotificationError(
+          cause instanceof api.ApiError ? cause.message : '알림을 불러오지 못했습니다.',
+        )
+      })
+      .finally(() => {
+        if (active) setNotificationLoading(false)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [role, notifOpen])
+
+  const markNotificationRead = async (notificationId: number) => {
+    try {
+      await api.markNotificationRead(notificationId)
+      setNotificationItems((items) =>
+        items.map((item) =>
+          item.notification_id === notificationId ? { ...item, is_read: true } : item,
+        ),
+      )
+      setUnreadCount((count) => Math.max(0, count - 1))
+    } catch (cause) {
+      setNotificationError(
+        cause instanceof api.ApiError ? cause.message : '알림 읽음 처리에 실패했습니다.',
+      )
+    }
+  }
 
   const go = (path: string) => {
     setMyPageOpen(false)
@@ -59,26 +103,22 @@ function AppHeader() {
         </button>
       </div>
 
-      <NotificationModal open={notifOpen} onClose={() => setNotifOpen(false)} />
+      <NotificationModal
+        open={notifOpen}
+        onClose={() => setNotifOpen(false)}
+        items={notificationItems}
+        unreadCount={unreadCount}
+        loading={notificationLoading}
+        error={notificationError}
+        onRead={markNotificationRead}
+      />
 
       <MyPageModal
         open={myPageOpen}
         onClose={() => setMyPageOpen(false)}
         onAddStore={() => go('/enterprise/location-analysis')}
-        onDeleteStore={() => {
-          setMyPageOpen(false)
-          setConfirmDeleteOpen(true)
-        }}
         onManageReports={() => go('/owner/reports')}
         onCreateReport={() => go('/owner/reports/new')}
-      />
-
-      <ConfirmDialog
-        open={confirmDeleteOpen}
-        ariaLabel="점포 삭제"
-        lines={['점포를 삭제하면 복구되지 않습니다.', '삭제하시겠습니까?']}
-        onCancel={() => setConfirmDeleteOpen(false)}
-        onConfirm={() => setConfirmDeleteOpen(false)}
       />
     </header>
   )

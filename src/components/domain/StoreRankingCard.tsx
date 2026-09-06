@@ -4,6 +4,7 @@ import Select from '../ui/Select'
 import StoreList from './StoreList'
 import { REGION_OPTIONS } from '../../data/mock'
 import type { StoreSummary } from '../../data/mock'
+import { useMemo } from 'react'
 
 interface StoreRankingCardProps {
   title: string
@@ -31,6 +32,16 @@ function StoreRankingCard({
   fill = false,
 }: StoreRankingCardProps) {
   const [region, setRegion] = useState(REGION_OPTIONS[0].value)
+  const visibleStores = useMemo(() => {
+    const filtered = stores.filter((store) => {
+      if (region === 'nation') return true
+      if (region === 'seoul') return store.region.startsWith('서울')
+      if (region === 'gyeonggi') return store.region.startsWith('경기')
+      if (region === 'incheon') return store.region.startsWith('인천')
+      return true
+    })
+    return filtered.slice(0, 5)
+  }, [region, stores])
 
   return (
     <Card
@@ -52,10 +63,10 @@ function StoreRankingCard({
         <p className={`${noticeClass} text-w-ink`}>{error}</p>
       ) : loading ? (
         <p className={`${noticeClass} text-w-placeholder`}>불러오는 중…</p>
-      ) : stores.length === 0 ? (
+      ) : visibleStores.length === 0 ? (
         <p className={`${noticeClass} text-w-placeholder`}>표시할 점포가 없습니다.</p>
       ) : (
-        <StoreList stores={stores} onSelect={onSelect} onLoadMore={onLoadMore} fill={fill} />
+        <StoreList stores={visibleStores} onSelect={onSelect} onLoadMore={onLoadMore} fill={fill} />
       )}
     </Card>
   )

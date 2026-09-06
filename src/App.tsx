@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage'
 import PlaceholderPage from './pages/PlaceholderPage'
 import LocationAnalysisPage from './pages/LocationAnalysisPage'
 import EnterpriseDashboardPage from './pages/enterprise/EnterpriseDashboardPage'
+import RiskSirenPage from './pages/enterprise/RiskSirenPage'
 import StoreDirectoryPage from './pages/enterprise/StoreDirectoryPage'
 import StoreReportsPage from './pages/enterprise/StoreReportsPage'
 import ReportDetailPage from './pages/enterprise/ReportDetailPage'
@@ -12,7 +13,6 @@ import OwnerDashboardPage from './pages/owner/OwnerDashboardPage'
 import OwnerReportsPage from './pages/owner/OwnerReportsPage'
 import OwnerReportDetailPage from './pages/owner/OwnerReportDetailPage'
 import FinancialReportFormPage from './pages/owner/FinancialReportFormPage'
-import { focusStores, rankingStores } from './data/mock'
 
 function App() {
   return (
@@ -24,14 +24,15 @@ function App() {
       <Route element={<RequireRole role="enterprise" />}>
         <Route element={<AppLayout />}>
           <Route path="/enterprise" element={<EnterpriseDashboardPage />} />
+          <Route path="/enterprise/risk-siren" element={<RiskSirenPage />} />
           <Route path="/enterprise/location-analysis" element={<LocationAnalysisPage />} />
           <Route
             path="/enterprise/ranking"
-            element={<StoreDirectoryPage title="매출 TOP 점포 랭킹" stores={rankingStores} />}
+            element={<StoreDirectoryPage title="매출 TOP 점포 랭킹" sort="net_sales_desc" />}
           />
           <Route
             path="/enterprise/focus-stores"
-            element={<StoreDirectoryPage title="집중 관리 필요 점포" stores={focusStores} />}
+            element={<StoreDirectoryPage title="집중 관리 필요 점포" sort="risk_desc" />}
           />
           <Route
             path="/enterprise/stores/:storeId/reports"

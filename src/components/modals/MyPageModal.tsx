@@ -1,16 +1,13 @@
 import { useNavigate } from 'react-router-dom'
 import Modal from '../ui/Modal'
 import Button from '../ui/Button'
-import Icon from '../ui/Icon'
 import { useSession } from '../../session/useSession'
-import { currentStore } from '../../data/mock'
 
 interface MyPageModalProps {
   open: boolean
   onClose: () => void
   /** Fired when 신규 점포 추가 / 점포 삭제 is pressed (enterprise). */
   onAddStore?: () => void
-  onDeleteStore?: () => void
   /** Fired for the owner actions. */
   onManageReports?: () => void
   onCreateReport?: () => void
@@ -24,11 +21,10 @@ function MyPageModal({
   open,
   onClose,
   onAddStore,
-  onDeleteStore,
   onManageReports,
   onCreateReport,
 }: MyPageModalProps) {
-  const { role, logout } = useSession()
+  const { role, user, logout } = useSession()
   const navigate = useNavigate()
 
   const handleLogout = () => {
@@ -42,34 +38,22 @@ function MyPageModal({
       open={open}
       onClose={onClose}
       title="마이페이지"
-      titleAction={
-        <button
-          type="button"
-          className="inline-flex p-1 bg-transparent border-0 cursor-pointer text-w-ink"
-          aria-label="설정"
-        >
-          <Icon name="settings" size={26} />
-        </button>
-      }
     >
       {role === 'owner' ? (
         <div className="flex flex-col gap-2.5 pt-2 pb-6">
-          <p className="text-[20px] text-w-ink">{currentStore.region}</p>
           <div className="flex items-baseline justify-between gap-4">
-            <p className="text-[28px] font-medium text-w-ink">{currentStore.name}</p>
-            <span className="text-[18px] text-w-ink">{currentStore.manager}</span>
+            <p className="text-[28px] font-medium text-w-ink">사업자 계정</p>
+            <span className="text-[18px] text-w-ink">{user?.name ?? '사업자'}</span>
           </div>
-          <p className="text-[18px] text-w-ink">업종명</p>
+          <p className="text-[18px] text-w-placeholder">연결된 점포 정보는 운영보고서에서 확인할 수 있습니다.</p>
         </div>
       ) : (
         <div className="flex flex-col gap-2.5 pt-2 pb-6">
           <div className="flex items-baseline justify-between gap-4">
-            <p className="text-[28px] font-medium text-w-ink">기업명</p>
-            <span className="text-[18px] text-w-ink">업종명</span>
+            <p className="text-[28px] font-medium text-w-ink">본사 계정</p>
+            <span className="text-[18px] text-w-ink">{user?.name ?? '본사'}</span>
           </div>
-          <p className="text-[18px] text-w-ink">
-            가맹 점포 수 <strong className="text-[24px] font-medium ml-2">OO</strong>
-          </p>
+          <p className="text-[18px] text-w-placeholder">가맹점 현황은 본사 대시보드에서 확인할 수 있습니다.</p>
         </div>
       )}
 
@@ -88,8 +72,8 @@ function MyPageModal({
             <Button block onClick={onAddStore}>
               신규 점포 추가
             </Button>
-            <Button block onClick={onDeleteStore}>
-              점포 삭제
+            <Button block disabled title="점포 삭제 API 연결 후 사용할 수 있습니다">
+              점포 삭제 (준비 중)
             </Button>
           </>
         )}

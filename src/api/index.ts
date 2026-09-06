@@ -72,6 +72,12 @@ export function fetchBranchReports(branchId: number, sort: 'month_desc' | 'month
   return request<{ items: ReportListItem[] }>(`/branches/${branchId}/reports?sort=${sort}`)
 }
 
+export function fetchMyReports(sort: 'month_desc' | 'month_asc' = 'month_desc', limit = 100) {
+  return request<{ items: ReportListItem[] }>(
+    `/reports?sort=${sort}&limit=${limit}`,
+  )
+}
+
 // ---------------------------------------------------------------- 보고서
 export function fetchInputFields() {
   return request<{ items: InputFieldItem[] }>('/reports/input-fields')

@@ -32,15 +32,27 @@ function store(key: string, value: string | null) {
   }
 }
 
+function readStored(key: string): string | null {
+  try {
+    return sessionStorage.getItem(key)
+  } catch {
+    return null
+  }
+}
+
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<SessionUser | null>(readStoredUser)
   const [pending, setPending] = useState(false)
 
   const logout = useCallback(() => {
+    const refreshToken = readStored(REFRESH_KEY)
     setUser(null)
     api.setToken(null)
     store(USER_KEY, null)
     store(REFRESH_KEY, null)
+    if (refreshToken) {
+      void api.logout(refreshToken).catch(() => undefined)
+    }
   }, [])
 
   // 토큰이 만료되면 화면만 로그인 상태로 남아 모든 요청이 실패한다.

@@ -75,11 +75,12 @@ export interface ReportInputItem {
 }
 
 export interface AnalysisDetail {
-  risk_score: number
-  risk_level: RiskLevel
-  factors: unknown[]
+  risk_score: number | null
+  risk_level: RiskLevel | null
+  factors: unknown[] | Record<string, unknown>
   risk_periods: unknown[]
   recommendations: unknown[]
+  calculation_status: 'calculated' | 'partial'
   rule_version: string
   calculated_at: string
 }
