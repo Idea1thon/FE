@@ -26,31 +26,46 @@ function FinancialReportFormPage() {
     // POS 연동 자리 — 실제 구현 시 불러온 값으로 setValues.
   }
 
+  const periodLabel = PERIOD_OPTIONS.find((p) => p.value === period)?.label ?? ''
+
   return (
-    <PageContainer className="pb-0! lg:pb-0!">
+    <PageContainer>
       <PageHeading
         size="lg"
-        title={`${currentStore.region} | ${currentStore.name} ${
-          PERIOD_OPTIONS.find((p) => p.value === period)?.label ?? ''
-        } 운영보고서`}
-        subtitle={
-          <Select
-            variant="inline"
-            ariaLabel="보고서 기간"
-            options={PERIOD_OPTIONS}
-            value={period}
-            onChange={(e) => setPeriod(e.target.value)}
-          />
-        }
+        backTo="/owner/reports"
+        eyebrow={`${currentStore.region} · ${currentStore.name}`}
+        title={`${periodLabel} 운영보고서`}
+        subtitle="입력한 값으로 위험도 분석이 계산됩니다. 모르는 항목은 비워 두어도 됩니다."
         actions={
-          <div className="flex gap-3 flex-wrap lg:flex-nowrap">
-            <Button onClick={loadFromPos}>POS 자료 불러오기</Button>
-            <Button onClick={() => navigate('/owner/reports')}>재무재표 보고서 생성</Button>
-          </div>
+          <>
+            <Select
+              variant="inline"
+              ariaLabel="보고서 기간"
+              options={PERIOD_OPTIONS}
+              value={period}
+              onChange={(e) => setPeriod(e.target.value)}
+            />
+            <Button variant="secondary" size="md" onClick={loadFromPos}>
+              POS 자료 불러오기
+            </Button>
+            <Button size="md" onClick={() => navigate('/owner/reports')}>
+              보고서 생성
+            </Button>
+          </>
         }
       />
 
       <FinancialReportForm values={values} onChange={setValue} />
+
+      {/* 항목이 길어 하단에서도 바로 제출할 수 있게 한 번 더 둔다. */}
+      <div className="mt-6 flex justify-end gap-3">
+        <Button variant="secondary" size="lg" onClick={() => navigate('/owner/reports')}>
+          취소
+        </Button>
+        <Button size="lg" onClick={() => navigate('/owner/reports')}>
+          보고서 생성
+        </Button>
+      </div>
     </PageContainer>
   )
 }

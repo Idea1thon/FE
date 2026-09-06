@@ -2,8 +2,10 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PageContainer from '../../components/layout/PageContainer'
 import PageHeading from '../../components/layout/PageHeading'
+import Card from '../../components/ui/Card'
 import Select from '../../components/ui/Select'
 import StoreList from '../../components/domain/StoreList'
+import { EmptyState } from '../../components/ui/StateView'
 import { REGION_OPTIONS } from '../../data/mock'
 import type { StoreSummary } from '../../data/mock'
 
@@ -21,6 +23,8 @@ function StoreDirectoryPage({ title, stores }: StoreDirectoryPageProps) {
     <PageContainer>
       <PageHeading
         title={title}
+        backTo="/enterprise"
+        meta={<span className="num">{stores.length}곳</span>}
         actions={
           <Select
             variant="inline"
@@ -31,10 +35,16 @@ function StoreDirectoryPage({ title, stores }: StoreDirectoryPageProps) {
           />
         }
       />
-      <StoreList
-        stores={stores}
-        onSelect={(store) => navigate(`/enterprise/stores/${store.id}/reports`)}
-      />
+      <Card flush>
+        {stores.length === 0 ? (
+          <EmptyState title="표시할 점포가 없습니다" />
+        ) : (
+          <StoreList
+            stores={stores}
+            onSelect={(store) => navigate(`/enterprise/stores/${store.id}/reports`)}
+          />
+        )}
+      </Card>
     </PageContainer>
   )
 }

@@ -25,21 +25,22 @@ function OwnerReportDetail({ reportId }: { reportId: string | undefined }) {
   const [confirmOpen, setConfirmOpen] = useState(false)
 
   return (
-    <PageContainer>
+    <PageContainer width="narrow">
       <PageHeading
         size="lg"
-        title={`${currentStore.region} | ${currentStore.name} 운영보고서`}
-        meta={report.period}
-        subtitle={currentStore.manager}
+        backTo="/owner/reports"
+        eyebrow={`${currentStore.region} · ${currentStore.name}`}
+        title={report.period}
+        subtitle={`위험도 ${report.riskPercent}`}
         actions={
           <>
             <PublishToggle published={published} onChange={setPublished} />
-            <div className="flex gap-3 flex-wrap lg:flex-nowrap">
-              <Button onClick={() => setEditing((v) => !v)}>
-                {editing ? '보고서 저장' : '보고서 수정'}
-              </Button>
-              <Button onClick={() => setConfirmOpen(true)}>보고서 삭제</Button>
-            </div>
+            <Button variant={editing ? 'primary' : 'secondary'} size="md" onClick={() => setEditing((v) => !v)}>
+              {editing ? '저장' : '수정'}
+            </Button>
+            <Button variant="ghost" size="md" onClick={() => setConfirmOpen(true)}>
+              삭제
+            </Button>
           </>
         }
       />
@@ -49,7 +50,13 @@ function OwnerReportDetail({ reportId }: { reportId: string | undefined }) {
       <ConfirmDialog
         open={confirmOpen}
         ariaLabel="보고서 삭제"
-        lines={['보고서를 삭제하면 복구되지 않습니다.', '삭제하시겠습니까?']}
+        title="보고서를 삭제할까요?"
+        lines={[
+          `${report.period} 보고서와 함께 계산된 위험도 분석도 사라집니다.`,
+          '삭제하면 되돌릴 수 없습니다.',
+        ]}
+        confirmLabel="삭제"
+        destructive
         onCancel={() => setConfirmOpen(false)}
         onConfirm={() => {
           setConfirmOpen(false)

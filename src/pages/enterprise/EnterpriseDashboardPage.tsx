@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import PageContainer from '../../components/layout/PageContainer'
+import PageHeading from '../../components/layout/PageHeading'
 import DashboardGrid from '../../components/layout/DashboardGrid'
 import StoreSearchCard from '../../components/domain/StoreSearchCard'
 import StoreRankingCard from '../../components/domain/StoreRankingCard'
@@ -20,7 +21,7 @@ function toLevel(score: number | null): RiskLevel {
 function EnterpriseDashboardPage() {
   const navigate = useNavigate()
 
-  // 매출 랭킹과 집중 관리 목록은 정렬·필터만 다른 같은 엔드포인트다.
+  // 매출 랭킹과 집중 관리 목록은 정렬·필터만 다른 같은 엔드포인트다. (변경 없음)
   const ranking = useBranches({ sort: 'net_sales_desc', limit: 5 })
   const focus = useBranches({ sort: 'risk_desc', limit: 5 }, true)
 
@@ -29,42 +30,55 @@ function EnterpriseDashboardPage() {
 
   return (
     <PageContainer>
+      <PageHeading
+        title="가맹점 현황"
+        subtitle="위험도가 높은 점포와 매출 상위 점포를 먼저 확인하세요."
+      />
+
       <DashboardGrid
         stretch
         left={
           <>
-            <StoreSearchCard
-              onSearch={(filters) =>
-                navigate('/enterprise/location-analysis', { state: filters })
-              }
+            <RiskSummaryCard
+              percent={focus.averageRisk === null ? '—' : `${focus.averageRisk}%`}
+              level={toLevel(focus.averageRisk)}
+              loading={focus.loading}
             />
             <StoreRankingCard
-              title="매출 TOP 점포 랭킹"
-              stores={ranking.stores}
-              loading={ranking.loading}
-              error={ranking.error}
+              title="집중 관리 필요 점포"
+              description="최신 보고서의 위험도가 높은 순서입니다."
+              stores={focus.stores}
+              loading={focus.loading}
+              error={focus.error}
+              onRetry={focus.reload}
               onSelect={openStoreReports}
-              onLoadMore={() => navigate('/enterprise/ranking')}
+              onLoadMore={() => navigate('/enterprise/focus-stores')}
+              emptyTitle="집중 관리가 필요한 점포가 없습니다"
+              emptyDescription="분석된 보고서가 쌓이면 위험도 순으로 정리해 보여줍니다."
               fill
             />
           </>
         }
         right={
-          <RiskSummaryCard
-            percent={focus.averageRisk === null ? '—' : `${focus.averageRisk}%`}
-            level={toLevel(focus.averageRisk)}
-            fill
-          >
+          <>
+            <StoreSearchCard
+              onSearch={(filters) => navigate('/enterprise/location-analysis', { state: filters })}
+            />
             <StoreRankingCard
-              title="집중 관리 필요 점포"
-              stores={focus.stores}
-              loading={focus.loading}
-              error={focus.error}
+              title="매출 TOP 점포"
+              description="최신 보고서의 순매출 기준입니다."
+              stores={ranking.stores}
+              loading={ranking.loading}
+              error={ranking.error}
+              onRetry={ranking.reload}
               onSelect={openStoreReports}
-              onLoadMore={() => navigate('/enterprise/focus-stores')}
+              onLoadMore={() => navigate('/enterprise/ranking')}
+              emptyTitle="아직 집계할 매출이 없습니다"
+              emptyDescription="점포가 운영보고서를 제출하면 순위가 만들어집니다."
+              ranked
               fill
             />
-          </RiskSummaryCard>
+          </>
         }
       />
     </PageContainer>

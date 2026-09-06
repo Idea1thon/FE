@@ -1,20 +1,28 @@
 import type { ReactNode } from 'react'
 
+/**
+ * Row list — LOCAL EXTENSION.
+ *
+ * The pre-redesign list stacked grey blocks with a full border on every row. It
+ * is rebuilt on the verified flat-layering rule instead: rows sit on canvas and
+ * are separated by the 1px `#e5e8eb` line, with `surface` reserved for hover.
+ * No shadow, because DESIGN.md promotes no elevation token.
+ */
+
 interface DataListProps {
   children: ReactNode
-  /** When set, renders a `+ 더보기` row at the bottom. */
+  /** Renders a full-width "더보기" row at the bottom. */
   onLoadMore?: () => void
   loadMoreLabel?: string
-  /** Grow to fill the card body and pin the `+ 더보기` row to the bottom edge. */
+  /** Grow to fill the card body and pin the load-more row to the bottom. */
   fill?: boolean
   className?: string
 }
 
-/** Stacked grey rows shared by the ranking / report / focus-store lists. */
 function DataList({
   children,
   onLoadMore,
-  loadMoreLabel = '+ 더보기',
+  loadMoreLabel = '더보기',
   fill = false,
   className,
 }: DataListProps) {
@@ -24,14 +32,19 @@ function DataList({
         .filter(Boolean)
         .join(' ')}
     >
-      {children}
+      <div className="flex flex-col">{children}</div>
       {onLoadMore && (
         <button
           type="button"
           className={[
-            'text-[16px] lg:text-[20px] text-w-ink bg-w-panel border border-w-line p-4 cursor-pointer hover:bg-w-row',
-            fill ? 'mt-auto' : 'border-t-0',
-          ].join(' ')}
+            'w-full py-4 text-bodysm font-semibold text-body cursor-pointer',
+            'border-t border-line bg-canvas transition-colors duration-150',
+            'hover:bg-surface hover:text-primary',
+            'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary',
+            fill ? 'mt-auto' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
           onClick={onLoadMore}
         >
           {loadMoreLabel}
@@ -43,19 +56,25 @@ function DataList({
 
 interface DataRowProps {
   children: ReactNode
-  /** Makes the whole row a button. */
+  /** Makes the whole row activate. */
   onClick?: () => void
   className?: string
 }
 
-const rowBase =
-  'flex items-center justify-between gap-4 w-full min-h-[62px] px-4 py-3 lg:px-6 text-[16px] lg:text-[20px] text-left text-w-ink bg-w-row border border-w-line -mt-px first:mt-0'
+const rowBase = [
+  'flex items-center justify-between gap-4 w-full min-h-[60px] px-5 py-3 lg:px-6',
+  'text-body text-left text-body',
+  'border-b border-line last:border-b-0',
+].join(' ')
 
 export function DataRow({ children, onClick, className }: DataRowProps) {
   const classes = [
     rowBase,
     onClick
-      ? 'cursor-pointer hover:brightness-[0.96] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-w-ink'
+      ? [
+          'cursor-pointer bg-canvas transition-colors duration-150 hover:bg-surface',
+          'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary',
+        ].join(' ')
       : '',
     className ?? '',
   ]

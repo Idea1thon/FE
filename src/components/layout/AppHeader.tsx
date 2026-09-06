@@ -7,7 +7,14 @@ import ConfirmDialog from '../modals/ConfirmDialog'
 import { useSession } from '../../session/useSession'
 import { notifications } from '../../data/mock'
 
-/** Global top bar: 서비스명 + 알림 벨 + 마이페이지. */
+/**
+ * Global top bar.
+ *
+ * Sticky on a white canvas with a single hairline underneath — the verified flat
+ * layering rule, so it separates from the content without a shadow. Height steps
+ * from 56px on mobile to 64px on desktop, both comfortably above the 48px touch
+ * target the TDS large control implies.
+ */
 function AppHeader() {
   const { role } = useSession()
   const navigate = useNavigate()
@@ -23,40 +30,49 @@ function AppHeader() {
     navigate(path)
   }
 
-  const iconBtn =
-    'relative inline-flex p-1.5 bg-transparent border-0 cursor-pointer text-w-ink rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-w-ink'
+  const iconBtn = [
+    'relative inline-flex size-10 items-center justify-center rounded-ctl-md',
+    'text-body cursor-pointer bg-transparent border-0 transition-colors duration-150',
+    'hover:bg-surface hover:text-fg',
+    'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
+  ].join(' ')
 
   return (
-    <header className="flex flex-none items-center justify-between h-16 px-5 bg-w-page border-b border-w-line lg:h-[90px]">
-      <Link to={home} className="text-[22px] font-normal text-w-ink no-underline lg:text-[30px]">
-        서비스명
-      </Link>
+    <header className="sticky top-0 z-50 flex-none bg-canvas border-b border-line">
+      <div className="mx-auto flex h-14 max-w-[1200px] items-center justify-between px-5 lg:h-16 lg:px-8">
+        <Link
+          to={home}
+          className="text-[19px] font-bold tracking-[-0.02em] text-fg no-underline lg:text-[21px]"
+        >
+          서비스명
+        </Link>
 
-      <div className="flex items-center gap-5">
-        <button
-          type="button"
-          className={iconBtn}
-          aria-label="알림"
-          aria-haspopup="dialog"
-          onClick={() => setNotifOpen(true)}
-        >
-          <Icon name="bell" size={28} />
-          {hasNotifications && (
-            <span
-              className="absolute top-1 right-1 w-2 h-2 rounded-full bg-risk-danger"
-              aria-hidden="true"
-            />
-          )}
-        </button>
-        <button
-          type="button"
-          className={iconBtn}
-          aria-label="마이페이지"
-          aria-haspopup="dialog"
-          onClick={() => setMyPageOpen(true)}
-        >
-          <Icon name="user" size={28} />
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            className={iconBtn}
+            aria-label={hasNotifications ? '알림 (읽지 않은 알림 있음)' : '알림'}
+            aria-haspopup="dialog"
+            onClick={() => setNotifOpen(true)}
+          >
+            <Icon name="bell" size={22} />
+            {hasNotifications && (
+              <span
+                className="absolute right-2 top-2 size-1.5 rounded-full bg-danger ring-2 ring-canvas"
+                aria-hidden="true"
+              />
+            )}
+          </button>
+          <button
+            type="button"
+            className={iconBtn}
+            aria-label="마이페이지"
+            aria-haspopup="dialog"
+            onClick={() => setMyPageOpen(true)}
+          >
+            <Icon name="user" size={22} />
+          </button>
+        </div>
       </div>
 
       <NotificationModal open={notifOpen} onClose={() => setNotifOpen(false)} />
@@ -76,7 +92,10 @@ function AppHeader() {
       <ConfirmDialog
         open={confirmDeleteOpen}
         ariaLabel="점포 삭제"
-        lines={['점포를 삭제하면 복구되지 않습니다.', '삭제하시겠습니까?']}
+        title="점포를 삭제할까요?"
+        lines={['삭제하면 이 점포의 운영보고서와 분석 결과를 되돌릴 수 없습니다.']}
+        confirmLabel="삭제"
+        destructive
         onCancel={() => setConfirmDeleteOpen(false)}
         onConfirm={() => setConfirmDeleteOpen(false)}
       />

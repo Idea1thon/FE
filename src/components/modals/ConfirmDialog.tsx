@@ -5,36 +5,53 @@ interface ConfirmDialogProps {
   open: boolean
   onCancel: () => void
   onConfirm: () => void
+  /** Question form — what will happen if they continue. */
+  title?: string
+  /** Consequence lines under the title. */
   lines?: string[]
   cancelLabel?: string
   confirmLabel?: string
-  /** Accessible name for the dialog (it has no visible heading). */
+  /** Renders the confirm action in the danger tone. */
+  destructive?: boolean
+  /** Accessible name for the dialog. */
   ariaLabel?: string
 }
 
-/** 삭제 확인 팝업 — generic two-button confirm. */
+/**
+ * 확인 팝업.
+ *
+ * DESIGN.md §1 asks that a person recovering from an interrupted flow be told
+ * the state, the consequence, and the next safe action. So the title states the
+ * action, the body states what cannot be undone, and the cancel button is the
+ * one that reads as safe — the destructive action is the tinted one.
+ */
 function ConfirmDialog({
   open,
   onCancel,
   onConfirm,
-  lines = ['삭제 시 복구되지 않습니다.', '삭제하시겠습니까?'],
-  cancelLabel = '뒤로가기',
-  confirmLabel = '네',
+  title = '계속할까요?',
+  lines = ['이 작업은 되돌릴 수 없습니다.'],
+  cancelLabel = '취소',
+  confirmLabel = '확인',
+  destructive = false,
   ariaLabel = '확인',
 }: ConfirmDialogProps) {
   return (
     <Modal open={open} onClose={onCancel} size="sm" ariaLabel={ariaLabel}>
-      <div className="flex flex-col gap-6 px-1 pt-3 pb-1 text-center">
-        <div className="flex flex-col gap-1.5 text-[18px] text-w-ink">
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-2">
+          <p className="text-h4 text-fg">{title}</p>
           {lines.map((line) => (
-            <p key={line}>{line}</p>
+            <p key={line} className="text-bodysm text-muted">
+              {line}
+            </p>
           ))}
         </div>
-        <div className="flex justify-center gap-3">
-          <Button className="min-w-24" onClick={onCancel}>
+        <div className="flex gap-3">
+          <Button variant="secondary" size="lg" block onClick={onCancel}>
             {cancelLabel}
           </Button>
-          <Button className="min-w-24" onClick={onConfirm}>
+          <Button variant={destructive ? 'danger' : 'primary'} size="lg" block onClick={onConfirm}>
             {confirmLabel}
           </Button>
         </div>

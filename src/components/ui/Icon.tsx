@@ -1,9 +1,4 @@
-type IconName =
-  | 'bell'
-  | 'user'
-  | 'search'
-  | 'chevron-down'
-  | 'settings'
+type IconName = 'bell' | 'user' | 'search' | 'chevron-down' | 'settings'
 
 interface IconProps {
   name: IconName
@@ -15,16 +10,16 @@ interface IconProps {
 }
 
 /**
- * Renders a single glyph from the `public/icons.svg` sprite.
- * Decorative by default; pass `label` when the icon carries meaning.
+ * Renders one glyph from the `public/icons.svg` sprite.
+ *
+ * The sprite strokes with `currentColor`, so color comes from the surrounding
+ * text token (`text-body`, `text-muted`, …) rather than being pinned here.
  */
 function Icon({ name, size = 24, label, className }: IconProps) {
   const decorative = label == null
   return (
     <svg
-      className={['inline-block shrink-0 align-middle text-w-ink', className]
-        .filter(Boolean)
-        .join(' ')}
+      className={['inline-block shrink-0 align-middle', className].filter(Boolean).join(' ')}
       style={{ width: size, height: size }}
       role={decorative ? 'presentation' : 'img'}
       aria-hidden={decorative || undefined}

@@ -4,21 +4,27 @@ interface ReportViewerProps {
   onChange?: (value: string) => void
 }
 
-/** 보고서 내용 영역 — 읽기 모드는 스크롤 박스, 수정 모드는 textarea. */
+/**
+ * 보고서 내용 — 읽기 모드는 스크롤 박스, 수정 모드는 textarea.
+ *
+ * Reading width is capped so long paragraphs stay scannable, and the edit mode
+ * keeps the same padding and type so switching does not shift the text.
+ */
 function ReportViewer({ content, editing = false, onChange }: ReportViewerProps) {
   return (
-    <div className="flex border border-w-line rounded-[10px] bg-w-field min-h-[420px] max-h-[70vh] overflow-hidden lg:min-h-[560px]">
+    <div className="flex min-h-[420px] overflow-hidden rounded-panel border border-line bg-canvas lg:min-h-[520px]">
       {editing ? (
         <textarea
-          className="flex-auto resize-none p-5 [font:inherit] [letter-spacing:inherit] text-[18px] leading-[1.6] text-w-ink bg-w-field border-0 lg:px-9 lg:py-8 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-w-ink"
+          className="flex-auto resize-none bg-canvas p-5 text-body leading-[1.7] text-fg border-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 lg:p-8"
           value={content}
           onChange={(e) => onChange?.(e.target.value)}
           aria-label="보고서 내용"
         />
       ) : (
-        <div className="flex-auto overflow-y-auto p-5 lg:px-9 lg:py-8">
-          <h2 className="text-[25px] mb-4">보고서 내용</h2>
-          <p className="text-[18px] leading-[1.6] whitespace-pre-wrap text-w-ink">{content}</p>
+        <div className="flex-auto overflow-y-auto p-5 lg:p-8">
+          <p className="max-w-[68ch] whitespace-pre-wrap text-body leading-[1.7] text-fg">
+            {content}
+          </p>
         </div>
       )}
     </div>

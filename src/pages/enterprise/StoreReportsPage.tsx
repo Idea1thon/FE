@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import PageContainer from '../../components/layout/PageContainer'
 import PageHeading from '../../components/layout/PageHeading'
+import Card from '../../components/ui/Card'
 import Select from '../../components/ui/Select'
 import ReportList from '../../components/domain/ReportList'
 import { getStore, operationReports, SORT_OPTIONS } from '../../data/mock'
@@ -17,8 +18,10 @@ function StoreReportsPage() {
     <PageContainer>
       <PageHeading
         size="lg"
-        title={`${store.region} | ${store.name} 운영보고서`}
-        subtitle={store.manager}
+        backTo="history"
+        eyebrow={store.region}
+        title={store.name}
+        subtitle={`${store.manager} · 운영보고서`}
         actions={
           <Select
             variant="inline"
@@ -29,13 +32,13 @@ function StoreReportsPage() {
           />
         }
       />
-      <ReportList
-        reports={operationReports}
-        variant="enterprise"
-        onOpen={(report) =>
-          navigate(`/enterprise/stores/${store.id}/reports/${report.id}`)
-        }
-      />
+      <Card flush>
+        <ReportList
+          reports={operationReports}
+          variant="enterprise"
+          onOpen={(report) => navigate(`/enterprise/stores/${store.id}/reports/${report.id}`)}
+        />
+      </Card>
     </PageContainer>
   )
 }

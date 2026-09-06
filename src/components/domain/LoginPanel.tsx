@@ -1,19 +1,30 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import TextField from '../ui/TextField'
+import Button from '../ui/Button'
 
 interface LoginPanelProps {
   title: string
-  /** Show the 간편로그인 social buttons (사업자용 로그인 only). */
+  /** One line explaining who this panel is for. */
+  description?: string
+  /** Show the 간편로그인 placeholder row (사업자용 only). */
   showSocialLogin?: boolean
-  /** 로그인 요청 진행 중이면 버튼을 잠근다. */
+  /** 로그인 요청 진행 중. */
   pending?: boolean
   onSubmit: (email: string, password: string) => void
 }
 
-/** 로그인 카드 — 기업용 / 사업자용 공통. */
+/**
+ * 로그인 카드 — 기업용 / 사업자용 공통.
+ *
+ * The submit control is the TDS xlarge button (56px / 16px radius / 17px-600),
+ * which DESIGN.md names as the documented default and as the strong touch
+ * action. Its loading state preserves width, so the card does not reflow while
+ * the request is in flight.
+ */
 function LoginPanel({
   title,
+  description,
   showSocialLogin = false,
   pending = false,
   onSubmit,
@@ -28,69 +39,72 @@ function LoginPanel({
 
   return (
     <form
-      className="flex flex-col gap-6 w-[min(457px,100%)] p-10 bg-w-panel border border-w-line rounded-[20px]"
+      className="flex w-[min(420px,100%)] flex-col gap-6 rounded-panel border border-line bg-canvas p-6 lg:p-8"
       onSubmit={submit}
     >
-      <h2 className="text-[30px] font-normal text-center text-w-ink">{title}</h2>
+      <div className="flex flex-col gap-2">
+        <h2 className="text-h3 text-fg">{title}</h2>
+        {description && <p className="text-bodysm text-muted">{description}</p>}
+      </div>
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-4">
         <TextField
-          label="ID"
-          inputSize="lg"
+          label="이메일"
+          variant="big"
           type="email"
           value={id}
           onChange={(e) => setId(e.target.value)}
+          placeholder="name@company.com"
           autoComplete="username"
           required
         />
         <TextField
-          label="PW"
+          label="비밀번호"
+          variant="big"
           type="password"
-          inputSize="lg"
           value={pw}
           onChange={(e) => setPw(e.target.value)}
+          placeholder="비밀번호를 입력하세요"
           autoComplete="current-password"
           required
         />
       </div>
 
+      <Button type="submit" size="xl" block loading={pending}>
+        로그인
+      </Button>
+
       {showSocialLogin && (
-        <div className="flex flex-col items-center gap-4 pt-5 border-t border-w-line">
-          <span className="text-[18px] text-w-ink">간편로그인</span>
-          <div className="flex gap-8">
-            <button
-              type="button"
-              className="w-[59px] h-[59px] rounded-full bg-w-social border-0 cursor-pointer"
-              aria-label="간편로그인 1"
-            />
-            <button
-              type="button"
-              className="w-[59px] h-[59px] rounded-full bg-w-social border-0 cursor-pointer"
-              aria-label="간편로그인 2"
-            />
-            <button
-              type="button"
-              className="w-[59px] h-[59px] rounded-full bg-w-social border-0 cursor-pointer"
-              aria-label="간편로그인 3"
-            />
+        <div className="flex flex-col items-center gap-4 border-t border-line pt-6">
+          <span className="text-bodysm text-muted">간편로그인</span>
+          <div className="flex gap-4">
+            {[1, 2, 3].map((n) => (
+              <button
+                key={n}
+                type="button"
+                className="size-12 cursor-pointer rounded-full border border-line bg-surface transition-colors duration-150 hover:bg-line/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                aria-label={`간편로그인 ${n}`}
+              />
+            ))}
           </div>
         </div>
       )}
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="p-3 text-[18px] text-w-ink bg-w-field border border-w-line rounded-[10px] cursor-pointer hover:bg-w-row disabled:cursor-progress disabled:opacity-60"
-      >
-        {pending ? '로그인 중…' : '로그인'}
-      </button>
-
-      <div className="flex justify-center gap-10 pt-5 border-t border-w-line text-[15px]">
-        <a href="#signup" className="text-w-ink no-underline hover:underline">
+      <div className="flex justify-center gap-6 border-t border-line pt-6 text-bodysm">
+        <a
+          href="#signup"
+          className="font-medium text-body no-underline transition-colors duration-150 hover:text-primary"
+        >
           회원가입
         </a>
-        <a href="#find" className="text-w-ink no-underline hover:underline">
-          ID/PW 찾기
+        <span className="text-line" aria-hidden="true">
+          |
+        </span>
+        <a
+          href="#find"
+          className="font-medium text-body no-underline transition-colors duration-150 hover:text-primary"
+        >
+          아이디 · 비밀번호 찾기
         </a>
       </div>
     </form>

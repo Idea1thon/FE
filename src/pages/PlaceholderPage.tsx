@@ -1,22 +1,31 @@
 import { useNavigate } from 'react-router-dom'
 import PageContainer from '../components/layout/PageContainer'
+import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
+import { EmptyState } from '../components/ui/StateView'
 
 interface PlaceholderPageProps {
   /** Name of the destination the wireframe only references (부동산 매물, 금융 상품 …). */
   title: string
 }
 
-/** Stand-in for pages that the 아이디어1톤 file only points to via annotations. */
+/** Stand-in for pages the wireframe only points to via annotations. */
 function PlaceholderPage({ title }: PlaceholderPageProps) {
   const navigate = useNavigate()
   return (
     <PageContainer width="narrow">
-      <div className="flex flex-col items-start gap-4 py-10">
-        <h1 className="text-[30px]">{title}</h1>
-        <p className="text-[18px] text-w-placeholder">이 화면은 아직 디자인되지 않았습니다.</p>
-        <Button onClick={() => navigate(-1)}>뒤로가기</Button>
-      </div>
+      <Card>
+        <EmptyState
+          size="page"
+          title={`${title}는 아직 준비 중입니다`}
+          description="화면이 연결되면 여기에서 바로 확인할 수 있습니다."
+          action={
+            <Button variant="secondary" size="lg" onClick={() => navigate(-1)}>
+              이전 화면으로
+            </Button>
+          }
+        />
+      </Card>
     </PageContainer>
   )
 }

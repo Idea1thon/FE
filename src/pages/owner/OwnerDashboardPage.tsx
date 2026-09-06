@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PageContainer from '../../components/layout/PageContainer'
+import PageHeading from '../../components/layout/PageHeading'
 import DashboardGrid from '../../components/layout/DashboardGrid'
 import RiskSummaryCard from '../../components/domain/RiskSummaryCard'
 import OperationReportCard from '../../components/domain/OperationReportCard'
 import StoreSearchCard from '../../components/domain/StoreSearchCard'
 import SolutionCards from '../../components/domain/SolutionCards'
-import { operationReports } from '../../data/mock'
+import { currentStore, operationReports } from '../../data/mock'
 import type { OperationReport } from '../../data/mock'
 
 /** 사업자(사용자) 로그인 후 메인 대시보드. */
@@ -21,6 +22,12 @@ function OwnerDashboardPage() {
 
   return (
     <PageContainer>
+      <PageHeading
+        eyebrow={currentStore.region}
+        title={currentStore.name}
+        subtitle="이번 달 운영 상태와 보고서를 확인하세요."
+      />
+
       <DashboardGrid
         stretch
         left={
@@ -39,7 +46,11 @@ function OwnerDashboardPage() {
         right={
           <>
             <StoreSearchCard onSearch={() => navigate('/owner/location-analysis')} />
-            <SolutionCards fill />
+            <SolutionCards
+              fill
+              onSelect={(product) => navigate(`/finance/${product.id}`)}
+              onLoadMore={() => navigate('/finance/all')}
+            />
           </>
         }
       />

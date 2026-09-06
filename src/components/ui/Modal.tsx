@@ -2,17 +2,30 @@ import { useEffect, useId, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import type { ReactNode } from 'react'
 
+/**
+ * Dialog shell — LOCAL EXTENSION.
+ *
+ * DESIGN.md does not publish a dialog, so the panel is assembled from verified
+ * values only: white canvas, the 1px line, the 16px xlarge radius, and the
+ * spacing cluster. There is deliberately **no drop shadow** — separation from
+ * the page comes from the flat scrim plus the border, because DESIGN.md
+ * promotes no elevation token.
+ *
+ * The focus trap, scroll lock, Escape handling and focus restore are unchanged
+ * behaviour carried over from the previous implementation.
+ */
+
 interface ModalProps {
   open: boolean
   onClose: () => void
-  /** Heading text shown top-left of the panel. Also becomes the dialog's accessible name. */
+  /** Heading text. Also becomes the dialog's accessible name. */
   title?: ReactNode
-  /** Accessible name when there is no visible `title` (e.g. a bare confirm dialog). */
+  /** Accessible name when there is no visible title. */
   ariaLabel?: string
-  /** Content pinned to the top-right of the header (e.g. a settings icon). */
+  /** Content pinned to the top-right of the header. */
   titleAction?: ReactNode
   size?: 'sm' | 'md'
-  /** Hide the default divider under the header. */
+  /** Hide the divider under the header. */
   hideDivider?: boolean
   children: ReactNode
 }
@@ -20,7 +33,6 @@ interface ModalProps {
 const FOCUSABLE =
   'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
-/** Popup shell for 알림 / 마이페이지 / 삭제 확인. */
 function Modal({
   open,
   onClose,
@@ -34,7 +46,6 @@ function Modal({
   const panelRef = useRef<HTMLDivElement>(null)
   const titleId = useId()
 
-  // Focus handling + scroll lock — runs only on open/close, not on every `onClose` identity change.
   useEffect(() => {
     if (!open) return
     const previouslyFocused = document.activeElement as HTMLElement | null
@@ -50,7 +61,6 @@ function Modal({
     }
   }, [open])
 
-  // Escape to close + Tab focus trap.
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => {
@@ -87,24 +97,20 @@ function Modal({
 
   if (!open) return null
 
-  const headClasses = [
-    'flex items-start justify-between gap-4 px-5 pt-5 pb-3 lg:px-8 lg:pt-7 lg:pb-4',
-    hideDivider ? '' : 'border-b border-w-line',
-  ]
-    .filter(Boolean)
-    .join(' ')
-
   return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-w-overlay"
+      className="fixed inset-0 z-100 flex items-end justify-center p-0 sm:items-center sm:p-6"
+      style={{ background: 'var(--overlay)' }}
       onClick={onClose}
     >
       <div
         ref={panelRef}
         tabIndex={-1}
-        className={`flex flex-col w-full max-h-[calc(100vh-48px)] bg-w-panel border border-w-line rounded-2xl shadow-[var(--shadow)] overflow-hidden focus:outline-none ${
-          size === 'sm' ? 'max-w-[420px]' : 'max-w-[560px]'
-        }`}
+        className={[
+          'flex flex-col w-full max-h-[calc(100svh-32px)] bg-canvas border border-line',
+          'rounded-t-panel sm:rounded-panel overflow-hidden focus:outline-none',
+          size === 'sm' ? 'sm:max-w-[400px]' : 'sm:max-w-[560px]',
+        ].join(' ')}
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
@@ -112,18 +118,23 @@ function Modal({
         onClick={(e) => e.stopPropagation()}
       >
         {(title || titleAction) && (
-          <header className={headClasses}>
+          <header
+            className={[
+              'flex items-start justify-between gap-4 px-6 pt-6 pb-4',
+              hideDivider ? '' : 'border-b border-line',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+          >
             {title && (
-              <h2 id={titleId} className="text-[20px] tracking-[-0.25px] lg:text-[25px]">
+              <h2 id={titleId} className="text-h4 text-fg">
                 {title}
               </h2>
             )}
-            {titleAction && (
-              <div className="flex flex-none items-center gap-2">{titleAction}</div>
-            )}
+            {titleAction && <div className="flex flex-none items-center gap-2">{titleAction}</div>}
           </header>
         )}
-        <div className="px-5 pb-5 pt-4 overflow-y-auto lg:px-8 lg:pb-7 lg:pt-5">{children}</div>
+        <div className="px-6 py-6 overflow-y-auto">{children}</div>
       </div>
     </div>,
     document.body,
