@@ -7,6 +7,8 @@ interface CardProps {
   action?: ReactNode
   /** Remove the inner padding — useful when the body is an edge-to-edge table. */
   flush?: boolean
+  /** Grow the body to fill the card when the card itself is stretched (`flex-1`) in a column. */
+  fill?: boolean
   className?: string
   /** Extra classes for the top-right action container. */
   actionClassName?: string
@@ -14,7 +16,15 @@ interface CardProps {
 }
 
 /** The grey rounded panel used across the design (`신규 점포 입지 분석`, `매출 TOP 점포 랭킹`, …). */
-function Card({ title, action, flush = false, className, actionClassName, children }: CardProps) {
+function Card({
+  title,
+  action,
+  flush = false,
+  fill = false,
+  className,
+  actionClassName,
+  children,
+}: CardProps) {
   const classes = [
     'flex flex-col bg-w-panel border border-w-line rounded-[10px] overflow-hidden',
     className ?? '',
@@ -29,7 +39,12 @@ function Card({ title, action, flush = false, className, actionClassName, childr
     .filter(Boolean)
     .join(' ')
 
-  const bodyClasses = flush ? 'p-0' : 'px-5 pb-5 pt-4 lg:px-7 lg:pb-7 lg:pt-5'
+  const bodyClasses = [
+    flush ? 'p-0' : 'px-5 pb-5 pt-4 lg:px-7 lg:pb-7 lg:pt-5',
+    fill ? 'flex flex-1 flex-col' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   return (
     <section className={classes}>

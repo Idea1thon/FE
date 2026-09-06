@@ -5,12 +5,14 @@ interface StoreListProps {
   stores: StoreSummary[]
   onSelect?: (store: StoreSummary) => void
   onLoadMore?: () => void
+  /** Fill the card body and pin `+ 더보기` to the bottom (stretched dashboard column). */
+  fill?: boolean
 }
 
 /** Grey row list of stores — "지역 | 점포명 ... 점장". Shared by ranking & focus-store views. */
-function StoreList({ stores, onSelect, onLoadMore }: StoreListProps) {
+function StoreList({ stores, onSelect, onLoadMore, fill = false }: StoreListProps) {
   return (
-    <DataList onLoadMore={onLoadMore}>
+    <DataList onLoadMore={onLoadMore} fill={fill}>
       {stores.map((store) => (
         <DataRow
           key={store.id}

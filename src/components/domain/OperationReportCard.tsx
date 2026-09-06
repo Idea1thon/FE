@@ -12,6 +12,8 @@ interface OperationReportCardProps {
   onOpen?: (report: OperationReport) => void
   onTogglePublish?: (report: OperationReport) => void
   onLoadMore?: () => void
+  /** Stretch the card to fill a stretched dashboard column (bottom edges align). */
+  fill?: boolean
 }
 
 /** 사용자 대시보드의 "운영 보고서" 카드. */
@@ -21,6 +23,7 @@ function OperationReportCard({
   onOpen,
   onTogglePublish,
   onLoadMore,
+  fill = false,
 }: OperationReportCardProps) {
   const [sort, setSort] = useState(SORT_OPTIONS[0].value)
 
@@ -28,6 +31,8 @@ function OperationReportCard({
     <Card
       title="운영 보고서"
       flush
+      fill={fill}
+      className={fill ? 'flex-1' : undefined}
       actionClassName="gap-3!"
       action={
         <>
@@ -48,6 +53,7 @@ function OperationReportCard({
         onOpen={onOpen}
         onTogglePublish={onTogglePublish}
         onLoadMore={onLoadMore}
+        fill={fill}
       />
     </Card>
   )

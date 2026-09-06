@@ -14,7 +14,11 @@ interface StoreRankingCardProps {
   error?: string | null
   onSelect?: (store: StoreSummary) => void
   onLoadMore?: () => void
+  /** Stretch the card to fill a stretched dashboard column (bottom edges align). */
+  fill?: boolean
 }
+
+const noticeClass = 'm-0 px-4 py-6 text-[16px] lg:px-6 lg:text-[20px]'
 
 /** Dashboard card: 매출 TOP 점포 랭킹 / 집중 관리 필요 점포 — region dropdown + store list. */
 function StoreRankingCard({
@@ -24,6 +28,7 @@ function StoreRankingCard({
   error = null,
   onSelect,
   onLoadMore,
+  fill = false,
 }: StoreRankingCardProps) {
   const [region, setRegion] = useState(REGION_OPTIONS[0].value)
 
@@ -31,6 +36,8 @@ function StoreRankingCard({
     <Card
       title={title}
       flush
+      fill={fill}
+      className={fill ? 'flex-1' : undefined}
       action={
         <Select
           variant="inline"
@@ -42,17 +49,13 @@ function StoreRankingCard({
       }
     >
       {error ? (
-        <p className="m-0 px-4 py-6 text-[16px] text-w-ink lg:px-6 lg:text-[20px]">{error}</p>
+        <p className={`${noticeClass} text-w-ink`}>{error}</p>
       ) : loading ? (
-        <p className="m-0 px-4 py-6 text-[16px] text-w-placeholder lg:px-6 lg:text-[20px]">
-          불러오는 중…
-        </p>
+        <p className={`${noticeClass} text-w-placeholder`}>불러오는 중…</p>
       ) : stores.length === 0 ? (
-        <p className="m-0 px-4 py-6 text-[16px] text-w-placeholder lg:px-6 lg:text-[20px]">
-          표시할 점포가 없습니다.
-        </p>
+        <p className={`${noticeClass} text-w-placeholder`}>표시할 점포가 없습니다.</p>
       ) : (
-        <StoreList stores={stores} onSelect={onSelect} onLoadMore={onLoadMore} />
+        <StoreList stores={stores} onSelect={onSelect} onLoadMore={onLoadMore} fill={fill} />
       )}
     </Card>
   )

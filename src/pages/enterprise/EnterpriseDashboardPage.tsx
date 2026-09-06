@@ -30,6 +30,7 @@ function EnterpriseDashboardPage() {
   return (
     <PageContainer>
       <DashboardGrid
+        stretch
         left={
           <>
             <StoreSearchCard
@@ -44,6 +45,7 @@ function EnterpriseDashboardPage() {
               error={ranking.error}
               onSelect={openStoreReports}
               onLoadMore={() => navigate('/enterprise/ranking')}
+              fill
             />
           </>
         }
@@ -51,6 +53,7 @@ function EnterpriseDashboardPage() {
           <RiskSummaryCard
             percent={focus.averageRisk === null ? '—' : `${focus.averageRisk}%`}
             level={toLevel(focus.averageRisk)}
+            fill
           >
             <StoreRankingCard
               title="집중 관리 필요 점포"
@@ -59,6 +62,7 @@ function EnterpriseDashboardPage() {
               error={focus.error}
               onSelect={openStoreReports}
               onLoadMore={() => navigate('/enterprise/focus-stores')}
+              fill
             />
           </RiskSummaryCard>
         }

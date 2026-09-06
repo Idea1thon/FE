@@ -8,6 +8,8 @@ interface ReportListProps {
   onOpen?: (report: OperationReport) => void
   onTogglePublish?: (report: OperationReport) => void
   onLoadMore?: () => void
+  /** Fill the card body and pin `+ 더보기` to the bottom (stretched dashboard column). */
+  fill?: boolean
 }
 
 /** 운영보고서 목록 — 기간 클릭 시 보고서 오픈. */
@@ -17,9 +19,10 @@ function ReportList({
   onOpen,
   onTogglePublish,
   onLoadMore,
+  fill = false,
 }: ReportListProps) {
   return (
-    <DataList onLoadMore={onLoadMore}>
+    <DataList onLoadMore={onLoadMore} fill={fill}>
       {reports.map((report) => (
         <DataRow key={report.id}>
           {variant === 'owner' && (

@@ -11,12 +11,14 @@ interface RiskSummaryCardProps {
   level?: RiskLevel
   /** Optional nested content — e.g. the 집중 관리 필요 점포 list. */
   children?: ReactNode
+  /** Stretch the card (and its nested list) to fill a stretched dashboard column. */
+  fill?: boolean
 }
 
 /** "지난 달 점포 운영 위험도는 OO% 입니다." + 안전/보통/위험 기준 (+ 선택적 하위 목록). */
-function RiskSummaryCard({ percent, level = 'safe', children }: RiskSummaryCardProps) {
+function RiskSummaryCard({ percent, level = 'safe', children, fill = false }: RiskSummaryCardProps) {
   return (
-    <Card>
+    <Card fill={fill} className={fill ? 'flex-1' : undefined}>
       <p className="text-[22px] leading-[1.3] text-w-ink lg:text-[30px]">
         지난 달 점포 운영 위험도는{' '}
         <RiskText level={level} className="text-[30px] lg:text-[40px]">
@@ -31,7 +33,9 @@ function RiskSummaryCard({ percent, level = 'safe', children }: RiskSummaryCardP
           </li>
         ))}
       </ul>
-      {children && <div className="mt-6">{children}</div>}
+      {children && (
+        <div className={fill ? 'mt-6 flex flex-1 flex-col' : 'mt-6'}>{children}</div>
+      )}
     </Card>
   )
 }
