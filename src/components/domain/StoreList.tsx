@@ -23,7 +23,7 @@ function StoreList({ stores, onSelect, onLoadMore, fill = false }: StoreListProp
             <span className="text-w-line">|</span>
             {store.name}
           </span>
-          <span className="flex-none text-right">{store.manager}</span>
+          <span className="flex-none text-right">{store.trailing || store.manager}</span>
         </DataRow>
       ))}
     </DataList>

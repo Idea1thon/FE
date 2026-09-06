@@ -6,17 +6,24 @@ interface LoginPanelProps {
   title: string
   /** Show the 간편로그인 social buttons (사업자용 로그인 only). */
   showSocialLogin?: boolean
-  onSubmit: () => void
+  /** 로그인 요청 진행 중이면 버튼을 잠근다. */
+  pending?: boolean
+  onSubmit: (email: string, password: string) => void
 }
 
 /** 로그인 카드 — 기업용 / 사업자용 공통. */
-function LoginPanel({ title, showSocialLogin = false, onSubmit }: LoginPanelProps) {
+function LoginPanel({
+  title,
+  showSocialLogin = false,
+  pending = false,
+  onSubmit,
+}: LoginPanelProps) {
   const [id, setId] = useState('')
   const [pw, setPw] = useState('')
 
   const submit = (e: FormEvent) => {
     e.preventDefault()
-    onSubmit()
+    onSubmit(id.trim(), pw)
   }
 
   return (
@@ -30,9 +37,11 @@ function LoginPanel({ title, showSocialLogin = false, onSubmit }: LoginPanelProp
         <TextField
           label="ID"
           inputSize="lg"
+          type="email"
           value={id}
           onChange={(e) => setId(e.target.value)}
           autoComplete="username"
+          required
         />
         <TextField
           label="PW"
@@ -41,6 +50,7 @@ function LoginPanel({ title, showSocialLogin = false, onSubmit }: LoginPanelProp
           value={pw}
           onChange={(e) => setPw(e.target.value)}
           autoComplete="current-password"
+          required
         />
       </div>
 
@@ -69,9 +79,10 @@ function LoginPanel({ title, showSocialLogin = false, onSubmit }: LoginPanelProp
 
       <button
         type="submit"
-        className="p-3 text-[18px] text-w-ink bg-w-field border border-w-line rounded-[10px] cursor-pointer hover:bg-w-row"
+        disabled={pending}
+        className="p-3 text-[18px] text-w-ink bg-w-field border border-w-line rounded-[10px] cursor-pointer hover:bg-w-row disabled:cursor-progress disabled:opacity-60"
       >
-        로그인
+        {pending ? '로그인 중…' : '로그인'}
       </button>
 
       <div className="flex justify-center gap-10 pt-5 border-t border-w-line text-[15px]">

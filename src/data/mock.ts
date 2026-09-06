@@ -9,6 +9,11 @@ export interface StoreSummary {
   region: string // "서울 강남구"
   name: string // "OOO 교보타워점"
   manager: string // "홍길동 점장"
+  /**
+   * 우측에 표시할 값. 실제 API 목록에는 점장 이름이 없어(상세를 부르면 N+1)
+   * 매출이나 위험도를 대신 보여준다. 비어 있으면 manager 를 쓴다.
+   */
+  trailing?: string
 }
 
 export interface LocationResult {

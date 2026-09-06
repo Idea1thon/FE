@@ -8,16 +8,24 @@ import type { StoreSummary } from '../../data/mock'
 interface StoreRankingCardProps {
   title: string
   stores: StoreSummary[]
+  /** 첫 로딩 중이면 목록 대신 안내를 보여준다. */
+  loading?: boolean
+  /** 호출 실패 메시지. 비어 있으면 정상. */
+  error?: string | null
   onSelect?: (store: StoreSummary) => void
   onLoadMore?: () => void
   /** Stretch the card to fill a stretched dashboard column (bottom edges align). */
   fill?: boolean
 }
 
+const noticeClass = 'm-0 px-4 py-6 text-[16px] lg:px-6 lg:text-[20px]'
+
 /** Dashboard card: 매출 TOP 점포 랭킹 / 집중 관리 필요 점포 — region dropdown + store list. */
 function StoreRankingCard({
   title,
   stores,
+  loading = false,
+  error = null,
   onSelect,
   onLoadMore,
   fill = false,
@@ -40,7 +48,15 @@ function StoreRankingCard({
         />
       }
     >
-      <StoreList stores={stores} onSelect={onSelect} onLoadMore={onLoadMore} fill={fill} />
+      {error ? (
+        <p className={`${noticeClass} text-w-ink`}>{error}</p>
+      ) : loading ? (
+        <p className={`${noticeClass} text-w-placeholder`}>불러오는 중…</p>
+      ) : stores.length === 0 ? (
+        <p className={`${noticeClass} text-w-placeholder`}>표시할 점포가 없습니다.</p>
+      ) : (
+        <StoreList stores={stores} onSelect={onSelect} onLoadMore={onLoadMore} fill={fill} />
+      )}
     </Card>
   )
 }
