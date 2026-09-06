@@ -56,21 +56,24 @@ function LoginPanel({
 
       {showSocialLogin && (
         <div className="flex flex-col items-center gap-4 pt-5 border-t border-w-line">
-          <span className="text-[18px] text-w-ink">간편로그인</span>
+          <span className="text-[18px] text-w-ink">간편로그인 (준비 중)</span>
           <div className="flex gap-8">
             <button
               type="button"
-              className="w-[59px] h-[59px] rounded-full bg-w-social border-0 cursor-pointer"
+              disabled
+              className="w-[59px] h-[59px] rounded-full bg-w-social border-0 cursor-not-allowed opacity-50"
               aria-label="간편로그인 1"
             />
             <button
               type="button"
-              className="w-[59px] h-[59px] rounded-full bg-w-social border-0 cursor-pointer"
+              disabled
+              className="w-[59px] h-[59px] rounded-full bg-w-social border-0 cursor-not-allowed opacity-50"
               aria-label="간편로그인 2"
             />
             <button
               type="button"
-              className="w-[59px] h-[59px] rounded-full bg-w-social border-0 cursor-pointer"
+              disabled
+              className="w-[59px] h-[59px] rounded-full bg-w-social border-0 cursor-not-allowed opacity-50"
               aria-label="간편로그인 3"
             />
           </div>
@@ -86,12 +89,8 @@ function LoginPanel({
       </button>
 
       <div className="flex justify-center gap-10 pt-5 border-t border-w-line text-[15px]">
-        <a href="#signup" className="text-w-ink no-underline hover:underline">
-          회원가입
-        </a>
-        <a href="#find" className="text-w-ink no-underline hover:underline">
-          ID/PW 찾기
-        </a>
+        <span className="text-w-placeholder">회원가입 (준비 중)</span>
+        <span className="text-w-placeholder">ID/PW 찾기 (준비 중)</span>
       </div>
     </form>
   )

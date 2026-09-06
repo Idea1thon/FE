@@ -7,13 +7,12 @@ interface RequireRoleProps {
 }
 
 /**
- * Route guard: logged-out visitors are allowed through so every page stays
- * reachable without signing in. A logged-in user visiting the other role's
- * flow is redirected to their own home.
+ * Route guard: authenticated users can only enter their own role flow.
  */
 function RequireRole({ role }: RequireRoleProps) {
   const { role: current } = useSession()
 
+  if (current === null) return <Navigate to="/login" replace />
   if (current !== null && current !== role) {
     return <Navigate to={current === 'enterprise' ? '/enterprise' : '/owner'} replace />
   }
