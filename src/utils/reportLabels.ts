@@ -77,29 +77,52 @@ const GROUP_BY_FIELD_CODE: Record<string, string> = {
 }
 
 const GROUP_LABELS: Record<string, string> = {
-  sales: '매출',
-  revenue: '매출',
-  deductions: '매출 차감 항목',
-  materials: '식자재',
-  beverages: '주류/음료',
-  inventory: '재고액',
-  labor: '인건비',
-  variable_costs: '변동비',
-  operating_costs: '운영비',
-  finance: '금융 및 기타',
+  SALES: '매출',
+  REVENUE: '매출',
+  DED: '매출 차감 항목',
+  DEDUCTIONS: '매출 차감 항목',
+  MAT: '식자재',
+  MATERIALS: '식자재',
+  BEV: '주류/음료',
+  BEVERAGES: '주류/음료',
+  INV: '재고액',
+  INVENTORY: '재고액',
+  LAB: '인건비',
+  LABOR: '인건비',
+  VAR: '변동비',
+  VARIABLE_COSTS: '변동비',
+  OPS: '운영비',
+  OPERATING_COSTS: '운영비',
+  FIN: '금융 및 기타',
+  FINANCE: '금융 및 기타',
+  HALL: '홀 매출',
+  DLV: '배달 매출',
+  TOGO: '포장 매출',
+}
+
+function normalizeKey(value: string) {
+  return value.trim().replaceAll(' ', '_').toUpperCase()
 }
 
 function localizedGroupName(field: InputFieldItem) {
-  const code = field.code.toUpperCase()
-  return GROUP_BY_FIELD_CODE[code] ?? GROUP_LABELS[field.group_name.toLowerCase()] ?? field.group_name
+  const code = normalizeKey(field.code)
+  const name = normalizeKey(field.name)
+  const group = normalizeKey(field.group_name)
+  return (
+    GROUP_BY_FIELD_CODE[code] ??
+    GROUP_BY_FIELD_CODE[name] ??
+    GROUP_LABELS[group] ??
+    field.group_name
+  )
 }
 
 /** API가 영문 라벨을 내려줘도 운영보고서 입력 화면은 한글로 표시한다. */
 export function localizeInputField(field: InputFieldItem): InputFieldItem {
-  const code = field.code.toUpperCase()
+  const code = normalizeKey(field.code)
+  const name = normalizeKey(field.name)
   return {
     ...field,
-    name: FIELD_LABELS[code] ?? field.name,
+    name: FIELD_LABELS[code] ?? FIELD_LABELS[name] ?? field.name,
     group_name: localizedGroupName(field),
   }
 }

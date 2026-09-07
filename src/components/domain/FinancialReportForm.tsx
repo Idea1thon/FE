@@ -1,4 +1,5 @@
 import type { InputFieldItem } from '../../api'
+import { localizeInputFields } from '../../utils/reportLabels'
 
 interface FinancialReportFormProps {
   /** 백엔드가 내려준 입력 항목. 코드·이름·그룹·필수 여부가 서버 정본이다. */
@@ -43,7 +44,7 @@ const GRID_COLS: Record<number, string> = {
 
 function groupFields(fields: InputFieldItem[]) {
   const grouped = new Map<string, InputFieldItem[]>()
-  for (const field of [...fields].sort((a, b) => a.display_order - b.display_order)) {
+  for (const field of localizeInputFields(fields).sort((a, b) => a.display_order - b.display_order)) {
     const current = grouped.get(field.group_name) ?? []
     current.push(field)
     grouped.set(field.group_name, current)
