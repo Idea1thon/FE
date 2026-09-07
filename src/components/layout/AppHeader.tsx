@@ -7,7 +7,7 @@ import { useSession } from '../../session/useSession'
 import * as api from '../../api'
 
 /**
- * Global top bar: 서비스명 + 알림 벨 + 마이페이지.
+ * Global top bar: safeOn 로고 + 알림 벨 + 마이페이지.
  *
  * 알림은 서버에서 받아온다 (`/notifications`). 읽음 처리도 API 를 거친 뒤 로컬
  * 상태를 맞춘다 — 낙관적 갱신만 하면 실패가 화면에 남지 않는다.
@@ -88,7 +88,7 @@ function AppHeader() {
           to={home}
           className="text-[19px] font-bold tracking-[-0.02em] text-fg no-underline lg:text-[21px]"
         >
-          서비스명
+          safeOn
         </Link>
 
         <div className="flex items-center gap-1">

@@ -30,7 +30,7 @@ function LoginPage() {
       <header className="flex-none border-b border-line bg-canvas">
         <div className="mx-auto flex h-14 max-w-[1200px] items-center px-5 lg:h-16 lg:px-8">
           <span className="text-[19px] font-bold tracking-[-0.02em] text-fg lg:text-[21px]">
-            서비스명
+            safeOn
           </span>
         </div>
       </header>

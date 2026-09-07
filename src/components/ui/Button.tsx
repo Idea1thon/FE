@@ -51,6 +51,10 @@ const sizes: Record<ButtonSize, string> = {
  * reuses the verified toss.im light-blue pair. `secondary` and `ghost` are a
  * LOCAL EXTENSION built only from verified neutrals (surface / line / body) —
  * DESIGN.md does not publish a neutral outline button.
+ *
+ * 채워진 변형(`primary`·`danger`)의 글자는 DESIGN.md 의 On Primary(`#ffffff`)다.
+ * 이 색은 `@layer base` 밖에 `button { color: inherit }` 가 있으면 무력화되므로
+ * `index.css` 의 기본값은 반드시 레이어 안에 있어야 한다.
  */
 const variants: Record<ButtonVariant, string> = {
   primary:

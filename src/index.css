@@ -99,63 +99,72 @@
   --color-w-social: var(--color-surface);
 }
 
-:root {
-  /* Scrim for dialogs — flat color, no elevation token. */
-  --overlay: rgba(25, 31, 40, 0.48);
+/* 아래 요소 기본값은 반드시 `@layer base` 안에 둔다.
+   ---------------------------------------------------------------------------
+   레이어에 넣지 않은 규칙은 CSS 캐스케이드에서 **모든 레이어 규칙을 이긴다**.
+   Tailwind 유틸리티는 `@layer utilities` 에 들어가므로, `button { color: inherit }`
+   을 레이어 밖에 두면 `text-on-primary` 같은 색 유틸리티가 전부 무력화된다.
+   실제로 파란 primary 버튼의 글자가 흰색이 아니라 본문 회색으로 렌더됐다. */
+@layer base {
+  :root {
+    /* Scrim for dialogs — flat color, no elevation token. */
+    --overlay: rgba(25, 31, 40, 0.48);
 
-  /* DESIGN.md publishes no dark palette. Rather than invent one, the product
-     stays on the verified light canvas and tells the UA so form controls and
-     scrollbars do not get auto-inverted. */
-  color-scheme: light;
+    /* DESIGN.md publishes no dark palette. Rather than invent one, the product
+       stays on the verified light canvas and tells the UA so form controls and
+       scrollbars do not get auto-inverted. */
+    color-scheme: light;
 
-  font-family: var(--font-sans);
-  font-size: 16px;
-  line-height: 24px;
-  color: var(--color-body);
-  background-color: var(--color-canvas);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  /* Korean copy breaks mid-word without this; DESIGN.md asks for direct,
-     readable hierarchy and a broken 점포명 reads as a typo. */
-  word-break: keep-all;
-  overflow-wrap: break-word;
-}
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 24px;
+    color: var(--color-body);
+    background-color: var(--color-canvas);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Korean copy breaks mid-word without this; DESIGN.md asks for direct,
+       readable hierarchy and a broken 점포명 reads as a typo. */
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
 
-body {
-  margin: 0;
-}
+  body {
+    margin: 0;
+  }
 
-#root {
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-}
+  #root {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+  }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
 
-h1,
-h2,
-h3,
-h4 {
-  margin: 0;
-  color: var(--color-fg);
-  letter-spacing: -0.02em;
-}
+  h1,
+  h2,
+  h3,
+  h4 {
+    margin: 0;
+    color: var(--color-fg);
+    letter-spacing: -0.02em;
+  }
 
-p {
-  margin: 0;
-}
+  p {
+    margin: 0;
+  }
 
-button {
-  font: inherit;
-  letter-spacing: inherit;
-  color: inherit;
+  button {
+    font: inherit;
+    letter-spacing: inherit;
+    /* 색은 유틸리티가 정한다. 이 값은 색 유틸리티가 없는 버튼의 기본값일 뿐이다. */
+    color: inherit;
+  }
 }
 
 /* Tabular figures keep 매출·위험도 columns from shifting between rows. */
