@@ -3,6 +3,7 @@ import AppLayout from './components/layout/AppLayout'
 import RequireRole from './routes/RequireRole'
 import LoginPage from './pages/LoginPage'
 import PlaceholderPage from './pages/PlaceholderPage'
+import PropertyPlaceholderPage from './pages/PropertyPlaceholderPage'
 import LocationAnalysisPage from './pages/LocationAnalysisPage'
 import EnterpriseDashboardPage from './pages/enterprise/EnterpriseDashboardPage'
 import RiskSirenPage from './pages/enterprise/RiskSirenPage'
@@ -56,9 +57,10 @@ function App() {
         </Route>
       </Route>
 
-      {/* 주석으로만 존재하는 외부 이동 대상 */}
+      {/* 실제 외부 서비스와 연결될 자리표시자 */}
       <Route element={<AppLayout />}>
-        <Route path="/property/:resultId" element={<PlaceholderPage title="부동산 매물 페이지" />} />
+        <Route path="/property" element={<PropertyPlaceholderPage />} />
+        <Route path="/property/:candidateId" element={<PropertyPlaceholderPage />} />
         <Route path="/finance/:productId" element={<PlaceholderPage title="금융 상품 페이지" />} />
       </Route>
 
