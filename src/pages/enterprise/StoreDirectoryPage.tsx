@@ -2,8 +2,11 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PageContainer from '../../components/layout/PageContainer'
 import PageHeading from '../../components/layout/PageHeading'
+import Card from '../../components/ui/Card'
 import Select from '../../components/ui/Select'
 import StoreList from '../../components/domain/StoreList'
+import { SkeletonRows } from '../../components/ui/Skeleton'
+import { EmptyState, ErrorState } from '../../components/ui/StateView'
 import { REGION_OPTIONS } from '../../data/mock'
 import { useBranches } from '../../hooks/useBranches'
 
@@ -31,10 +34,15 @@ function StoreDirectoryPage({ title, sort }: StoreDirectoryPageProps) {
     [branches.stores, region],
   )
 
+  const filteredOut = stores.length === 0 && branches.stores.length > 0
+
   return (
     <PageContainer>
       <PageHeading
         title={title}
+        backTo="/enterprise"
+        meta={!branches.loading && !branches.error ? <span className="num">{stores.length}곳</span> : undefined}
+        subtitle={showRisk ? '위험도가 높은 순서입니다.' : '최신 보고서의 순매출 기준입니다.'}
         actions={
           <Select
             variant="inline"
@@ -46,25 +54,28 @@ function StoreDirectoryPage({ title, sort }: StoreDirectoryPageProps) {
         }
       />
 
-      {branches.error && (
-        <p role="alert" className="mb-5 border border-risk-danger bg-w-panel px-4 py-3 text-[15px] text-risk-danger">
-          {branches.error}
-        </p>
-      )}
-      {branches.loading ? (
-        <p className="border border-w-line bg-w-panel px-6 py-8 text-center text-[16px] text-w-placeholder">
-          점포 목록을 불러오는 중입니다…
-        </p>
-      ) : stores.length === 0 ? (
-        <p className="border border-w-line bg-w-panel px-6 py-8 text-center text-[16px] text-w-placeholder">
-          표시할 점포가 없습니다.
-        </p>
-      ) : (
-        <StoreList
-          stores={stores}
-          onSelect={(store) => navigate(`/enterprise/stores/${store.id}/reports`)}
-        />
-      )}
+      <Card flush>
+        {branches.error ? (
+          <ErrorState message={branches.error} onRetry={branches.reload} />
+        ) : branches.loading ? (
+          <SkeletonRows rows={8} label={`${title} 불러오는 중`} />
+        ) : stores.length === 0 ? (
+          <EmptyState
+            title={filteredOut ? '이 지역에는 해당 점포가 없습니다' : '표시할 점포가 없습니다'}
+            description={
+              filteredOut
+                ? '지역을 전국으로 바꿔 보세요.'
+                : '점포가 운영보고서를 제출하면 목록이 채워집니다.'
+            }
+          />
+        ) : (
+          <StoreList
+            stores={stores}
+            ranked={!showRisk}
+            onSelect={(store) => navigate(`/enterprise/stores/${store.id}/reports`)}
+          />
+        )}
+      </Card>
     </PageContainer>
   )
 }

@@ -1,4 +1,5 @@
-import type { SelectHTMLAttributes } from 'react'
+import { useId } from 'react'
+import type { SelectHTMLAttributes, ReactNode } from 'react'
 import Icon from './Icon'
 
 export interface SelectOption {
@@ -6,57 +7,94 @@ export interface SelectOption {
   label: string
 }
 
-interface SelectProps
-  extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'children'> {
+interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'children'> {
   options: SelectOption[]
-  /** `box` = bordered field (도/시/동); `inline` = text + chevron (전국 ▾, 최신순 ▾). */
+  /** `box` matches the text field; `inline` is a quiet text + chevron trigger. */
   variant?: 'box' | 'inline'
-  /** Accessible label (visually hidden). */
+  /** Accessible label. Rendered visibly when `label` is passed instead. */
   ariaLabel: string
+  /** Visible label above a `box` select. */
+  label?: ReactNode
+  error?: ReactNode
 }
 
-const controlBase =
-  'w-full appearance-none [font:inherit] [letter-spacing:inherit] text-w-ink cursor-pointer [&>option]:bg-w-field [&>option]:text-w-ink'
-
-const controlByVariant = {
-  box: 'h-[50px] pl-4 pr-10 text-center bg-w-field border border-w-line rounded-[7px] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-w-ink',
-  inline: 'h-7 pl-1 pr-[22px] text-[16px] bg-transparent border-0 lg:text-[20px]',
-}
-
-/** Native `<select>` styled to match the wireframe dropdowns. */
+/**
+ * Native `<select>` styled to sit beside the TDS text field.
+ *
+ * LOCAL EXTENSION — DESIGN.md documents a text field but no select. Geometry is
+ * therefore borrowed from the verified field/button values (48px box height,
+ * 10px radius) rather than from a generic dropdown pattern. A native control is
+ * kept on purpose: it gives correct mobile behaviour and keyboard support for
+ * free, which the verified state contract asks for.
+ */
 function Select({
   options,
   variant = 'box',
   ariaLabel,
+  label,
+  error,
   className,
+  disabled,
+  id,
   ...rest
 }: SelectProps) {
-  const classes = [
-    'relative inline-flex items-center',
-    variant === 'box' ? 'min-w-[120px]' : '',
-    className ?? '',
-  ]
-    .filter(Boolean)
-    .join(' ')
+  const generatedId = useId()
+  const fieldId = id ?? generatedId
+
+  const control =
+    variant === 'box'
+      ? [
+          'h-12 w-full pl-4 pr-10 rounded-ctl-md text-body bg-canvas text-fg',
+          'border transition-colors duration-150 focus:outline-none',
+          error
+            ? 'border-danger focus:border-danger focus:ring-2 focus:ring-danger/20'
+            : 'border-line focus:border-primary focus:ring-2 focus:ring-primary/20',
+          disabled ? 'bg-surface text-muted cursor-not-allowed' : 'cursor-pointer',
+        ].join(' ')
+      : [
+          'h-8 pl-2 pr-7 rounded-ctl-sm text-bodysm font-medium bg-transparent text-body',
+          'border border-transparent transition-colors duration-150',
+          'hover:bg-surface focus:outline-none focus-visible:outline-2',
+          'focus-visible:outline-offset-2 focus-visible:outline-primary',
+          disabled ? 'text-muted cursor-not-allowed' : 'cursor-pointer',
+        ].join(' ')
 
   return (
-    <div className={classes}>
-      <select
-        className={`${controlBase} ${controlByVariant[variant]}`}
-        aria-label={ariaLabel}
-        {...rest}
-      >
-        {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
-      <Icon
-        name="chevron-down"
-        size={variant === 'inline' ? 16 : 18}
-        className={`absolute pointer-events-none ${variant === 'inline' ? 'right-0' : 'right-3'}`}
-      />
+    <div className={['flex flex-col gap-2', className ?? ''].filter(Boolean).join(' ')}>
+      {label && (
+        <label htmlFor={fieldId} className="text-bodysm font-medium text-body">
+          {label}
+        </label>
+      )}
+      <div className="relative flex items-center">
+        <select
+          id={fieldId}
+          className={`appearance-none ${control}`}
+          aria-label={label ? undefined : ariaLabel}
+          aria-invalid={error ? true : undefined}
+          disabled={disabled}
+          {...rest}
+        >
+          {options.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+        <Icon
+          name="chevron-down"
+          size={variant === 'inline' ? 14 : 18}
+          className={[
+            'absolute pointer-events-none',
+            variant === 'inline' ? 'right-2 text-muted' : 'right-3.5 text-muted',
+          ].join(' ')}
+        />
+      </div>
+      {error && (
+        <p role="alert" className="text-bodysm text-danger">
+          {error}
+        </p>
+      )}
     </div>
   )
 }

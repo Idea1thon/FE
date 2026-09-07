@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import Card from '../ui/Card'
 import Select from '../ui/Select'
-import Icon from '../ui/Icon'
+import Button from '../ui/Button'
 import TextField from '../ui/TextField'
 import { useRegionSelect } from '../../hooks/useRegionSelect'
 import * as api from '../../api'
@@ -23,14 +23,18 @@ interface StoreSearchCardProps {
 /**
  * 신규 점포 입지 분석 검색 카드.
  *
- * 지역은 서버의 `region` 표에서 받아온다. 하드코딩하면 추천 서비스가 지원하는
+ * 지역·업종은 서버에서 받아온다 (변경 없음). 하드코딩하면 추천 서비스가 지원하는
  * 범위와 어긋나 "선택은 되는데 결과가 없다"가 된다.
+ *
+ * Layout follows DESIGN.md §6: every control carries a visible label so the
+ * question being asked is concrete, and the required fields are marked rather
+ * than only failing on submit.
  */
 function StoreSearchCard({ onSearch, pending = false }: StoreSearchCardProps) {
   const region = useRegionSelect()
   const [category, setCategory] = useState('')
   const [categories, setCategories] = useState<{ value: string; label: string }[]>([
-    { value: '', label: '업종 선택' },
+    { value: '', label: '업종 전체' },
   ])
   const [conditionText, setConditionText] = useState('')
   const [touched, setTouched] = useState(false)
@@ -42,7 +46,7 @@ function StoreSearchCard({ onSearch, pending = false }: StoreSearchCardProps) {
       .then((res) => {
         if (cancelled) return
         setCategories([
-          { value: '', label: '업종 선택' },
+          { value: '', label: '업종 전체' },
           ...res.items.map((c) => ({ value: c.code, label: c.name })),
         ])
       })
@@ -64,67 +68,66 @@ function StoreSearchCard({ onSearch, pending = false }: StoreSearchCardProps) {
     })
   }
 
-  const selectClass = 'flex-1 basis-[calc(50%-8px)] lg:basis-0'
+  const missingRegion = touched && !region.selectedCode
 
   return (
-    <Card title="신규 점포 입지 분석">
-      <form className="flex flex-col gap-4" onSubmit={submit}>
-        <div className="flex items-center gap-4 flex-wrap lg:flex-nowrap">
+    <Card
+      title="신규 점포 입지 분석"
+      description="지역과 업종을 고르면 추천 입지와 근거를 함께 보여줍니다."
+    >
+      <form className="flex flex-col gap-5" onSubmit={submit}>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Select
+            label="시 · 도"
             ariaLabel="시·도 선택 (필수)"
             options={region.sidoOptions}
             value={region.sido}
             onChange={(e) => region.setSido(e.target.value)}
-            className={selectClass}
           />
           <Select
+            label="시 · 군 · 구"
             ariaLabel="시·군·구 선택 (필수)"
             options={region.sigunguOptions}
             value={region.sigungu}
             onChange={(e) => region.setSigungu(e.target.value)}
             disabled={!region.sido}
-            className={selectClass}
+            error={missingRegion ? '시·군·구까지 선택해 주세요' : undefined}
           />
           <Select
+            label="행정동 (선택)"
             ariaLabel="행정동 선택 (선택)"
             options={region.dongOptions}
             value={region.dong}
             onChange={(e) => region.setDong(e.target.value)}
             disabled={!region.sigungu}
-            className={selectClass}
           />
           <Select
+            label="업종 (선택)"
             ariaLabel="업종 선택"
             options={categories}
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className={selectClass}
           />
-          <button
-            type="submit"
-            disabled={pending}
-            className="flex-none inline-flex items-center justify-center w-12 h-12 bg-transparent border-0 cursor-pointer text-w-ink rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-w-ink disabled:cursor-progress disabled:opacity-50"
-            aria-label="검색"
-          >
-            <Icon name="search" size={28} />
-          </button>
         </div>
 
         <TextField
-          label="신규 점포 추가 조건"
-          hideLabel
-          layout="stacked"
+          label="추가 조건 (선택)"
           value={conditionText}
           onChange={(e) => setConditionText(e.target.value)}
-          placeholder="신규 점포의 특별한 조건이 있다면 입력해주세요."
+          placeholder="예: 직장인 점심 수요가 많고 경쟁이 적은 곳"
           maxLength={2000}
+          help="찾는 조건을 문장으로 적으면 그 조건에 맞춰 근거를 정리합니다."
         />
 
-        {(region.error || (touched && !region.selectedCode)) && (
-          <p role="alert" className="m-0 text-[15px] text-w-ink">
-            {region.error ?? '시·군·구까지 선택해 주세요.'}
+        {region.error && (
+          <p role="alert" className="text-bodysm text-danger">
+            {region.error}
           </p>
         )}
+
+        <Button type="submit" size="lg" block loading={pending}>
+          입지 분석 시작
+        </Button>
       </form>
     </Card>
   )

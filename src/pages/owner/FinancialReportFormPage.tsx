@@ -6,6 +6,8 @@ import Button from '../../components/ui/Button'
 import Select from '../../components/ui/Select'
 import Card from '../../components/ui/Card'
 import FinancialReportForm from '../../components/domain/FinancialReportForm'
+import Skeleton from '../../components/ui/Skeleton'
+import { EmptyState, ErrorState } from '../../components/ui/StateView'
 import { ApiError, fetchInputFields, submitReport } from '../../api'
 import type { InputFieldItem } from '../../api'
 
@@ -37,10 +39,12 @@ function FinancialReportFormPage() {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [notice, setNotice] = useState<string | null>(null)
+  const [loadNonce, setLoadNonce] = useState(0)
 
   useEffect(() => {
     let active = true
+    // `setLoading(true)` 는 재시도 핸들러에서 처리한다 — 효과 안에서 동기적으로
+    // setState 하면 불필요한 렌더가 한 번 더 돈다.
     fetchInputFields()
       .then((response) => {
         if (!active) return
@@ -57,17 +61,15 @@ function FinancialReportFormPage() {
     return () => {
       active = false
     }
-  }, [])
+  }, [loadNonce])
 
   const setValue = (fieldCode: string, value: string) => {
     setValues((previous) => ({ ...previous, [fieldCode]: value }))
     setError(null)
-    setNotice(null)
   }
 
   const handleSubmit = async () => {
     setError(null)
-    setNotice(null)
 
     const missing = fields
       .filter((field) => field.is_required && !values[field.code]?.trim())
@@ -108,66 +110,106 @@ function FinancialReportFormPage() {
     }
   }
 
+  const periodLabel = PERIOD_OPTIONS.find((p) => p.value === period)?.label ?? ''
+  const requiredCount = fields.filter((f) => f.is_required).length
+  const noFields = !loading && fields.length === 0
+
+  const reloadFields = () => {
+    setLoading(true)
+    setLoadNonce((n) => n + 1)
+  }
+
   return (
-    <PageContainer className="pb-0! lg:pb-0!">
+    <PageContainer>
       <PageHeading
         size="lg"
-        title={`${
-          PERIOD_OPTIONS.find((p) => p.value === period)?.label ?? ''
-        } 운영보고서 작성`}
-        subtitle={
-          <Select
-            variant="inline"
-            ariaLabel="보고서 기간"
-            options={PERIOD_OPTIONS}
-            value={period}
-            onChange={(event) => setPeriod(event.target.value)}
-            disabled={submitting}
-          />
-        }
+        backTo="/owner/reports"
+        title={`${periodLabel} 운영보고서 작성`}
+        subtitle="저장하면 위험도 분석이 백그라운드로 실행됩니다. 금액은 원 단위 0 이상 정수입니다."
         actions={
-          <Button disabled={loading || submitting || fields.length === 0} onClick={handleSubmit}>
-            {submitting ? '저장·분석 요청 중…' : '운영보고서 저장 및 분석 요청'}
-          </Button>
+          <>
+            <Select
+              variant="inline"
+              ariaLabel="보고서 기간"
+              options={PERIOD_OPTIONS}
+              value={period}
+              onChange={(event) => setPeriod(event.target.value)}
+              disabled={submitting}
+            />
+            <Button
+              size="md"
+              loading={submitting}
+              disabled={loading || noFields}
+              onClick={handleSubmit}
+            >
+              저장 및 분석 요청
+            </Button>
+          </>
         }
       />
 
+      {/* 검증·저장 실패는 폼 위에 둔다 — 아래에 두면 스크롤 밖으로 밀린다. */}
       {error && (
-        <p role="alert" className="mb-5 border border-risk-danger bg-w-panel px-4 py-3 text-[15px] text-risk-danger">
+        <div
+          role="alert"
+          className="mb-6 rounded-ctl-md border border-danger bg-danger/5 px-4 py-3 text-bodysm text-danger"
+        >
           {error}
-        </p>
-      )}
-      {notice && (
-        <p className="mb-5 border border-w-line bg-w-panel px-4 py-3 text-[15px] text-w-ink">{notice}</p>
+        </div>
       )}
 
-      <Card
-        title="운영보고서 입력"
-        action={
-          <span className="text-[14px] text-w-placeholder">
-            {loading ? '백엔드 항목 불러오는 중…' : `${fields.length}개 항목 · * 필수`}
-          </span>
-        }
-      >
-        {loading ? (
-          <p className="py-8 text-center text-[16px] text-w-placeholder">입력 항목을 불러오는 중입니다…</p>
-        ) : fields.length === 0 ? (
-          <p className="py-8 text-center text-[16px] text-w-placeholder">입력할 항목이 없습니다.</p>
-        ) : (
+      {loading ? (
+        <Card title="운영보고서 입력">
+          <div className="flex flex-col gap-3" role="status" aria-live="polite">
+            <span className="sr-only">입력 항목을 불러오는 중</span>
+            {Array.from({ length: 6 }, (_, i) => (
+              <div key={i} className="flex items-center justify-between gap-3">
+                <Skeleton className="h-4 w-40 rounded-xs" />
+                <Skeleton className="h-10 w-[132px] rounded-ctl-sm" />
+              </div>
+            ))}
+          </div>
+        </Card>
+      ) : noFields ? (
+        <Card flush>
+          {error ? (
+            <ErrorState message={error} onRetry={reloadFields} />
+          ) : (
+            <EmptyState
+              title="입력할 항목이 없습니다"
+              description="서버에서 내려주는 입력 항목이 비어 있습니다. 잠시 후 다시 시도해 주세요."
+            />
+          )}
+        </Card>
+      ) : (
+        <>
+          <p className="mb-4 text-bodysm text-muted">
+            <span className="num font-semibold text-body">{fields.length}</span>개 항목 · 필수{' '}
+            <span className="num font-semibold text-body">{requiredCount}</span>개(
+            <span className="text-danger">*</span>)
+          </p>
           <FinancialReportForm
             fields={fields}
             values={values}
             onChange={setValue}
             disabled={submitting}
           />
-        )}
-      </Card>
-
-      <p className="py-5 text-[14px] leading-[1.6] text-w-placeholder">
-        저장하면 보고서는 먼저 <strong>ANALYZING</strong> 상태로 생성되고, 위험 사이렌이 켜진
-        환경에서는 백그라운드 분석 후 결과와 앱 내 알림이 갱신됩니다. 금액은 원 단위의 0 이상
-        정수로 입력합니다.
-      </p>
+          {/* 항목이 길어 하단에서도 바로 제출할 수 있게 한 번 더 둔다. */}
+          <div className="mt-6 flex justify-end gap-3">
+            <Button
+              variant="secondary"
+              size="lg"
+              disabled={submitting}
+              onClick={() => navigate('/owner/reports')}
+            >
+              취소
+            </Button>
+            <Button size="lg" loading={submitting} onClick={handleSubmit}>
+              저장 및 분석 요청
+            </Button>
+          </div>
+        </>
+      )}
     </PageContainer>
   )
 }

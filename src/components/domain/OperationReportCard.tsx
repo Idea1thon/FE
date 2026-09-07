@@ -4,6 +4,7 @@ import Button from '../ui/Button'
 import Select from '../ui/Select'
 import ReportList from './ReportList'
 import ApiReportList from './ApiReportList'
+import { ErrorState } from '../ui/StateView'
 import type { ReportListItem } from '../../api'
 import { SORT_OPTIONS } from '../../data/mock'
 import type { OperationReport } from '../../data/mock'
@@ -14,15 +15,22 @@ interface OperationReportCardProps {
   onOpen?: (report: OperationReport) => void
   onTogglePublish?: (report: OperationReport) => void
   onLoadMore?: () => void
+  /** 서버에서 받아온 보고서 목록. 주어지면 이쪽을 우선 렌더한다. */
   apiReports?: ReportListItem[]
   onApiOpen?: (report: ReportListItem) => void
   onSortChange?: (value: string) => void
   apiError?: string | null
-  /** Stretch the card to fill a stretched dashboard column (bottom edges align). */
+  /** Stretch the card to fill a stretched dashboard column. */
   fill?: boolean
 }
 
-/** 사용자 대시보드의 "운영 보고서" 카드. */
+/**
+ * 사업자 대시보드의 "운영 보고서" 카드.
+ *
+ * `apiReports` 가 있으면 서버 목록(ApiReportList)을, 없으면 목데이터 목록을
+ * 보여준다 — dev 의 분기를 그대로 유지한다. 정렬 변경은 상위로 올려 서버 재조회에
+ * 쓰인다.
+ */
 function OperationReportCard({
   reports,
   onCreate,
@@ -40,13 +48,13 @@ function OperationReportCard({
   return (
     <Card
       title="운영 보고서"
+      description="월별 재무제표와 위험도 분석 결과입니다."
       flush
       fill={fill}
       className={fill ? 'flex-1' : undefined}
-      actionClassName="gap-3!"
+      actionClassName="flex-row! items-center! gap-2!"
       action={
         <>
-          <Button onClick={onCreate}>전월 재무재표보고서 생성</Button>
           <Select
             variant="inline"
             ariaLabel="정렬 기준"
@@ -57,17 +65,21 @@ function OperationReportCard({
               onSortChange?.(e.target.value)
             }}
           />
+          <Button size="md" onClick={onCreate}>
+            전월 보고서 작성
+          </Button>
         </>
       }
     >
       {apiReports ? (
         <>
-          {apiError && (
-            <p role="alert" className="border border-risk-danger bg-w-panel px-4 py-3 text-[15px] text-risk-danger">
-              {apiError}
-            </p>
-          )}
-          <ApiReportList reports={apiReports} onOpen={onApiOpen} onLoadMore={onLoadMore} fill={fill} />
+          {apiError && <ErrorState message={apiError} />}
+          <ApiReportList
+            reports={apiReports}
+            onOpen={onApiOpen}
+            onLoadMore={onLoadMore}
+            fill={fill}
+          />
         </>
       ) : (
         <ReportList

@@ -4,7 +4,12 @@ import LoginPanel from '../components/domain/LoginPanel'
 import { ApiError } from '../api'
 import { useSession } from '../session/useSession'
 
-/** 로그인 화면 — 좌: 기업용 로그인, 우: 사업자용 로그인. */
+/**
+ * 로그인 화면 — 좌: 기업용, 우: 사업자용.
+ *
+ * 두 패널은 흰 canvas 카드로 두고 페이지 배경만 `surface` 로 낮춰 대비를 만든다.
+ * 어느 칸으로 로그인했든 이동 경로는 서버가 준 역할로 결정한다 (기존 동작 유지).
+ */
 function LoginPage() {
   const { login, pending } = useSession()
   const navigate = useNavigate()
@@ -14,43 +19,55 @@ function LoginPage() {
     setError(null)
     try {
       const user = await login(email, password)
-      // 어느 칸으로 로그인했든 서버가 정한 역할로 보낸다.
       navigate(user.role === 'enterprise' ? '/enterprise' : '/owner')
     } catch (cause) {
-      setError(
-        cause instanceof ApiError ? cause.message : '로그인 중 문제가 발생했습니다',
-      )
+      setError(cause instanceof ApiError ? cause.message : '로그인 중 문제가 발생했습니다')
     }
   }
 
   return (
-    <div className="flex flex-col flex-auto min-h-[100svh] bg-w-page text-w-ink">
-      <header className="flex flex-none items-center h-16 px-5 text-[22px] border-b border-w-line lg:h-[90px] lg:text-[30px]">
-        서비스명
+    <div className="flex min-h-[100svh] flex-auto flex-col bg-surface text-body">
+      <header className="flex-none border-b border-line bg-canvas">
+        <div className="mx-auto flex h-14 max-w-[1200px] items-center px-5 lg:h-16 lg:px-8">
+          <span className="text-[19px] font-bold tracking-[-0.02em] text-fg lg:text-[21px]">
+            서비스명
+          </span>
+        </div>
       </header>
 
-      {error && (
-        <p
-          role="alert"
-          className="flex-none mx-5 mt-5 p-3 text-[15px] text-w-ink bg-w-field border border-w-line rounded-[10px] lg:mx-6"
-        >
-          {error}
-        </p>
-      )}
+      <main className="mx-auto flex w-full max-w-[1200px] flex-auto flex-col justify-center px-5 py-10 lg:px-8 lg:py-16">
+        <div className="mb-8 flex flex-col gap-2 text-center lg:mb-12">
+          <h1 className="text-h2 text-fg lg:text-h1">점포 운영, 숫자로 답을 찾으세요</h1>
+          <p className="text-body text-muted">
+            운영 위험도와 신규 입지 분석을 한 화면에서 확인합니다.
+          </p>
+        </div>
 
-      <div className="flex-auto grid grid-cols-1 lg:grid-cols-2">
-        <section className="flex items-center justify-center px-5 py-10 lg:px-6 lg:py-16">
-          <LoginPanel title="기업용 로그인" pending={pending} onSubmit={handleLogin} />
-        </section>
-        <section className="flex items-center justify-center px-5 py-10 border-t border-w-line lg:px-6 lg:py-16 lg:border-t-0 lg:border-l">
+        {error && (
+          <div
+            role="alert"
+            className="mx-auto mb-6 w-[min(880px,100%)] rounded-ctl-md border border-danger bg-danger/5 px-4 py-3 text-bodysm text-danger"
+          >
+            {error}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 justify-items-center gap-6 lg:grid-cols-2">
+          <LoginPanel
+            title="기업용 로그인"
+            description="본사에서 가맹 점포 위험도와 랭킹을 관리합니다."
+            pending={pending}
+            onSubmit={handleLogin}
+          />
           <LoginPanel
             title="사업자용 로그인"
+            description="내 점포의 보고서를 작성하고 위험도를 확인합니다."
             showSocialLogin
             pending={pending}
             onSubmit={handleLogin}
           />
-        </section>
-      </div>
+        </div>
+      </main>
     </div>
   )
 }

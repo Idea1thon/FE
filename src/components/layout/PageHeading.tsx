@@ -1,34 +1,60 @@
+import { useNavigate } from 'react-router-dom'
 import type { ReactNode } from 'react'
 
 interface PageHeadingProps {
   title: ReactNode
-  /** Inline text next to the title (e.g. the report period). */
+  /** Quiet line above the title — where this page sits (점포명, 기간 등). */
+  eyebrow?: ReactNode
+  /** Inline metadata beside the title. */
   meta?: ReactNode
-  /** Secondary line under the title (e.g. 점장 이름). */
+  /** Secondary line under the title. */
   subtitle?: ReactNode
-  /** Right-aligned controls (sort dropdown, buttons, toggle). */
+  /** Right-aligned controls. */
   actions?: ReactNode
+  /** `lg` uses the H2 role, `md` uses H3. */
   size?: 'md' | 'lg'
+  /** Renders a back link above the title. */
+  backTo?: 'history' | string
 }
 
-/** Title block for standalone list & detail pages. */
-function PageHeading({ title, meta, subtitle, actions, size = 'md' }: PageHeadingProps) {
-  const titleSize =
-    size === 'lg'
-      ? 'text-[24px] tracking-[-0.3px] lg:text-[30px]'
-      : 'text-[20px] tracking-[-0.25px] lg:text-[25px]'
+/**
+ * Title block for list and detail pages.
+ *
+ * Uses the documented type roles directly (H2 30/600/45, H3 24/600/36) instead
+ * of ad-hoc pixel sizes, so the hierarchy is the same everywhere.
+ */
+function PageHeading({
+  title,
+  eyebrow,
+  meta,
+  subtitle,
+  actions,
+  size = 'md',
+  backTo,
+}: PageHeadingProps) {
+  const navigate = useNavigate()
 
   return (
-    <div className="flex flex-col gap-4 mb-5 lg:flex-row lg:items-start lg:justify-between lg:gap-6">
-      <div>
-        <div className="flex items-baseline gap-6 flex-wrap">
-          <h1 className={`font-medium ${titleSize}`}>{title}</h1>
-          {meta && <span className="text-[18px] text-w-ink">{meta}</span>}
+    <div className="mb-6 flex flex-col gap-4 lg:mb-8 lg:flex-row lg:items-end lg:justify-between lg:gap-8">
+      <div className="min-w-0">
+        {backTo && (
+          <button
+            type="button"
+            className="mb-2 -ml-1 inline-flex h-8 items-center gap-1 rounded-ctl-sm px-1 text-bodysm font-medium text-muted transition-colors duration-150 hover:text-body focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            onClick={() => (backTo === 'history' ? navigate(-1) : navigate(backTo))}
+          >
+            <span aria-hidden="true">←</span> 뒤로
+          </button>
+        )}
+        {eyebrow && <p className="mb-1 text-bodysm font-medium text-muted">{eyebrow}</p>}
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <h1 className={size === 'lg' ? 'text-h2 text-fg' : 'text-h3 text-fg'}>{title}</h1>
+          {meta && <span className="text-body text-muted">{meta}</span>}
         </div>
-        {subtitle && <div className="mt-1.5 text-[18px] text-w-ink">{subtitle}</div>}
+        {subtitle && <div className="mt-2 text-bodysm text-muted">{subtitle}</div>}
       </div>
       {actions && (
-        <div className="flex flex-none flex-col items-start gap-3 lg:items-end">{actions}</div>
+        <div className="flex flex-none flex-wrap items-center gap-3 lg:justify-end">{actions}</div>
       )}
     </div>
   )

@@ -1,3 +1,6 @@
+import Badge from '../ui/Badge'
+import Card from '../ui/Card'
+import { EmptyState } from '../ui/StateView'
 import type { LocationRecommendationResult } from '../../api'
 
 interface LocationResultListProps {
@@ -51,69 +54,110 @@ function toView(raw: Record<string, unknown>, index: number): CandidateView {
   }
 }
 
-/** 신규 점포 입지 분석 결과 목록. */
+/** 등급 문자열을 배지 톤으로. 알 수 없는 값은 중립으로 둔다 — 색으로 단정하지 않는다. */
+function tierTone(tier: string): 'primary' | 'safe' | 'warn' | 'neutral' {
+  if (tier.includes('적합') && !tier.includes('부적합')) return 'primary'
+  if (tier.includes('우수') || tier.includes('추천')) return 'safe'
+  if (tier.includes('조건부') || tier.includes('검토')) return 'warn'
+  return 'neutral'
+}
+
+/**
+ * 신규 점포 입지 분석 결과 목록.
+ *
+ * 각 후보는 순위 · 위치 · 등급을 한 줄로 먼저 보여주고, 그 아래에 관측 근거와
+ * 유의할 점을 나눠 싣는다. DESIGN.md §1 의 "value first" 를 따르되 반대 근거를
+ * 같은 카드 안에 남긴다 — 추천만 나열하면 판단 근거가 한쪽으로 기운다.
+ */
 function LocationResultList({ result }: LocationResultListProps) {
   const candidates = result.candidates.map(toView)
 
   if (candidates.length === 0) {
     return (
-      <p className="m-0 text-[18px] text-w-placeholder">
-        조건에 맞는 후보를 찾지 못했습니다. 지역이나 조건을 바꿔 다시 검색해 보세요.
-      </p>
+      <Card>
+        <EmptyState
+          title="조건에 맞는 후보를 찾지 못했습니다"
+          description="행정동을 비우거나 업종·추가 조건을 넓혀 다시 검색해 보세요."
+        />
+      </Card>
     )
   }
 
-  return (
-    <>
-      <p className="m-0 text-[16px] text-w-placeholder">
-        후보 {candidates.length}곳
-        {/* LLM 없이 규칙 기반으로 설명이 만들어진 경우를 숨기지 않는다. */}
-        {result.explanations?.degraded === true && ' · 설명은 규칙 기반으로 생성되었습니다'}
-      </p>
+  const degraded = result.explanations?.degraded === true
 
-      <ul className="list-none m-0 p-0">
+  return (
+    <section className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-h3 text-fg">
+          추천 입지 <span className="num text-primary">{candidates.length}</span>곳
+        </h2>
+        {/* LLM 없이 규칙 기반으로 설명이 만들어진 경우를 숨기지 않는다. */}
+        {degraded && (
+          <Badge tone="warn" size="sm">
+            설명은 규칙 기반으로 생성됨
+          </Badge>
+        )}
+      </div>
+
+      <ul className="flex list-none flex-col gap-4 p-0">
         {candidates.map((c) => (
-          <li key={c.id} className="border-t border-w-line first:border-t-0">
-            <div className="flex flex-col gap-3.5 w-full px-1 py-6 text-left text-w-ink">
-              <span className="flex items-baseline gap-3">
-                <span className="flex-none text-[18px] text-w-placeholder lg:text-[22px]">
+          <li key={c.id}>
+            <article className="flex flex-col gap-4 rounded-panel border border-line bg-canvas p-5 lg:p-6">
+              <header className="flex items-start gap-4">
+                <span
+                  className="num flex size-9 flex-none items-center justify-center rounded-ctl-md bg-weak text-[15px] font-bold text-weak-fg"
+                  aria-hidden="true"
+                >
                   {c.rank}
                 </span>
-                <span className="text-[22px] font-medium lg:text-[28px]">{c.title}</span>
-                {c.tier && (
-                  <span className="flex-none px-2 py-0.5 text-[14px] border border-w-line rounded-md">
-                    {c.tier}
-                  </span>
-                )}
-              </span>
-
-              {c.detail && <span className="text-[18px]">{c.detail}</span>}
+                <div className="min-w-0 flex-auto">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-h4 text-fg">
+                      <span className="sr-only">{c.rank}위 후보 </span>
+                      {c.title}
+                    </h3>
+                    {c.tier && (
+                      <Badge tone={tierTone(c.tier)} size="sm">
+                        {c.tier}
+                      </Badge>
+                    )}
+                  </div>
+                  {c.detail && <p className="mt-1 text-bodysm text-muted">{c.detail}</p>}
+                </div>
+              </header>
 
               {c.reasons.length > 0 && (
-                <ul className="list-none m-0 p-0 flex flex-col gap-1.5">
-                  {c.reasons.map((r, i) => (
-                    <li key={i} className="text-[17px] leading-[1.5]">
-                      · {r}
-                    </li>
-                  ))}
-                </ul>
+                <div className="flex flex-col gap-2">
+                  <p className="text-bodysm font-semibold text-body">관측된 근거</p>
+                  <ul className="flex list-none flex-col gap-2 p-0">
+                    {c.reasons.map((r, i) => (
+                      <li key={i} className="flex gap-2 text-body">
+                        <span className="mt-2 size-1.5 flex-none rounded-full bg-primary" aria-hidden="true" />
+                        <span>{r}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
 
-              {/* 반대 근거를 같이 보여준다. 추천만 나열하면 판단 근거가 한쪽으로 기운다. */}
               {c.cautions.length > 0 && (
-                <ul className="list-none m-0 p-0 flex flex-col gap-1.5">
-                  {c.cautions.map((r, i) => (
-                    <li key={i} className="text-[16px] leading-[1.5] text-w-placeholder">
-                      · {r}
-                    </li>
-                  ))}
-                </ul>
+                <div className="flex flex-col gap-2 rounded-ctl-md bg-surface p-4">
+                  <p className="text-bodysm font-semibold text-body">함께 볼 점</p>
+                  <ul className="flex list-none flex-col gap-2 p-0">
+                    {c.cautions.map((r, i) => (
+                      <li key={i} className="flex gap-2 text-bodysm text-muted">
+                        <span className="mt-1.5 size-1.5 flex-none rounded-full bg-muted" aria-hidden="true" />
+                        <span>{r}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
-            </div>
+            </article>
           </li>
         ))}
       </ul>
-    </>
+    </section>
   )
 }
 

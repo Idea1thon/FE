@@ -1,7 +1,20 @@
+/**
+ * Footer.
+ *
+ * Kept deliberately quiet: it sits on the neutral `surface` layer with a
+ * hairline above, so it closes the page without competing with the content.
+ * The copy is a placeholder the wireframe never specified — it is not presented
+ * as real company information.
+ */
 function AppFooter() {
   return (
-    <footer className="flex flex-none items-center min-h-[96px] px-5 py-5 bg-w-page border-t border-w-line lg:min-h-[138px] lg:px-11 lg:py-6">
-      <p className="text-[22px] text-w-ink lg:text-[30px]">Footer</p>
+    <footer className="mt-auto flex-none border-t border-line bg-surface">
+      <div className="mx-auto flex max-w-[1200px] flex-col gap-1 px-5 py-8 sm:px-6 lg:px-8">
+        <p className="text-bodysm font-semibold text-body">서비스명</p>
+        <p className="text-bodysm text-muted">
+          점포 운영 위험도와 신규 입지 분석을 한곳에서 확인하세요.
+        </p>
+      </div>
     </footer>
   )
 }

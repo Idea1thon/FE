@@ -3,24 +3,37 @@ interface PublishToggleProps {
   onChange: (published: boolean) => void
 }
 
-// Both options stay full-contrast; the active one is marked by weight + underline
-// (dimming the inactive label made it unreadable on the panel background).
-const option =
-  'text-w-ink bg-transparent border-0 px-1 py-0.5 cursor-pointer aria-pressed:font-bold aria-pressed:underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-w-ink'
+/**
+ * 공개 / 비공개 세그먼트 — LOCAL EXTENSION.
+ *
+ * Built from the verified surface/canvas/primary roles and the 8px small-control
+ * radius. The selected side is filled with primary rather than merely underlined
+ * so the current state is legible at a glance, which is the point of the control.
+ */
+const option = [
+  'h-8 min-w-[64px] px-3 rounded-ctl-sm text-bodysm font-semibold cursor-pointer',
+  'border border-transparent transition-colors duration-150',
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
+].join(' ')
 
-/** "공개 | 비공개" 클릭 토글 — 보고서 공개 상태 설정. */
 function PublishToggle({ published, onChange }: PublishToggleProps) {
+  const cls = (active: boolean) =>
+    [option, active ? 'bg-primary text-on-primary' : 'bg-transparent text-muted hover:text-body'].join(
+      ' ',
+    )
+
   return (
-    <div className="inline-flex items-center gap-2.5 text-[20px]" role="group" aria-label="공개 상태">
-      <button type="button" className={option} aria-pressed={published} onClick={() => onChange(true)}>
+    <div
+      className="inline-flex items-center gap-1 p-1 rounded-ctl-md bg-surface"
+      role="group"
+      aria-label="공개 상태"
+    >
+      <button type="button" className={cls(published)} aria-pressed={published} onClick={() => onChange(true)}>
         공개
       </button>
-      <span className="text-w-line" aria-hidden="true">
-        |
-      </span>
       <button
         type="button"
-        className={option}
+        className={cls(!published)}
         aria-pressed={!published}
         onClick={() => onChange(false)}
       >

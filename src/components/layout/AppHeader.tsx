@@ -6,7 +6,14 @@ import MyPageModal from '../modals/MyPageModal'
 import { useSession } from '../../session/useSession'
 import * as api from '../../api'
 
-/** Global top bar: 서비스명 + 알림 벨 + 마이페이지. */
+/**
+ * Global top bar: 서비스명 + 알림 벨 + 마이페이지.
+ *
+ * 알림은 서버에서 받아온다 (`/notifications`). 읽음 처리도 API 를 거친 뒤 로컬
+ * 상태를 맞춘다 — 낙관적 갱신만 하면 실패가 화면에 남지 않는다.
+ *
+ * 시각적으로는 흰 canvas 에 hairline 하나로 본문과 구분한다(평면 레이어링).
+ */
 function AppHeader() {
   const { role } = useSession()
   const navigate = useNavigate()
@@ -67,40 +74,50 @@ function AppHeader() {
     navigate(path)
   }
 
-  const iconBtn =
-    'relative inline-flex p-1.5 bg-transparent border-0 cursor-pointer text-w-ink rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-w-ink'
+  const iconBtn = [
+    'relative inline-flex size-10 items-center justify-center rounded-ctl-md',
+    'text-body cursor-pointer bg-transparent border-0 transition-colors duration-150',
+    'hover:bg-surface hover:text-fg',
+    'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
+  ].join(' ')
 
   return (
-    <header className="flex flex-none items-center justify-between h-16 px-5 bg-w-page border-b border-w-line lg:h-[90px]">
-      <Link to={home} className="text-[22px] font-normal text-w-ink no-underline lg:text-[30px]">
-        서비스명
-      </Link>
+    <header className="sticky top-0 z-50 flex-none bg-canvas border-b border-line">
+      <div className="mx-auto flex h-14 max-w-[1200px] items-center justify-between px-5 lg:h-16 lg:px-8">
+        <Link
+          to={home}
+          className="text-[19px] font-bold tracking-[-0.02em] text-fg no-underline lg:text-[21px]"
+        >
+          서비스명
+        </Link>
 
-      <div className="flex items-center gap-5">
-        <button
-          type="button"
-          className={iconBtn}
-          aria-label="알림"
-          aria-haspopup="dialog"
-          onClick={() => setNotifOpen(true)}
-        >
-          <Icon name="bell" size={28} />
-          {hasNotifications && (
-            <span
-              className="absolute top-1 right-1 w-2 h-2 rounded-full bg-risk-danger"
-              aria-hidden="true"
-            />
-          )}
-        </button>
-        <button
-          type="button"
-          className={iconBtn}
-          aria-label="마이페이지"
-          aria-haspopup="dialog"
-          onClick={() => setMyPageOpen(true)}
-        >
-          <Icon name="user" size={28} />
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            className={iconBtn}
+            // 미확인 개수를 라벨에 담아 색 점만으로 상태를 전달하지 않는다.
+            aria-label={hasNotifications ? `알림 (미확인 ${unreadCount}개)` : '알림'}
+            aria-haspopup="dialog"
+            onClick={() => setNotifOpen(true)}
+          >
+            <Icon name="bell" size={22} />
+            {hasNotifications && (
+              <span
+                className="absolute right-2 top-2 size-1.5 rounded-full bg-danger ring-2 ring-canvas"
+                aria-hidden="true"
+              />
+            )}
+          </button>
+          <button
+            type="button"
+            className={iconBtn}
+            aria-label="마이페이지"
+            aria-haspopup="dialog"
+            onClick={() => setMyPageOpen(true)}
+          >
+            <Icon name="user" size={22} />
+          </button>
+        </div>
       </div>
 
       <NotificationModal

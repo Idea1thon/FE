@@ -1,19 +1,31 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import TextField from '../ui/TextField'
+import Button from '../ui/Button'
 
 interface LoginPanelProps {
   title: string
-  /** Show the 간편로그인 social buttons (사업자용 로그인 only). */
+  /** One line explaining who this panel is for. */
+  description?: string
+  /** Show the 간편로그인 row (사업자용 only). Still disabled until wired. */
   showSocialLogin?: boolean
-  /** 로그인 요청 진행 중이면 버튼을 잠근다. */
+  /** 로그인 요청 진행 중. */
   pending?: boolean
   onSubmit: (email: string, password: string) => void
 }
 
-/** 로그인 카드 — 기업용 / 사업자용 공통. */
+/**
+ * 로그인 카드 — 기업용 / 사업자용 공통.
+ *
+ * 간편로그인·회원가입·ID/PW 찾기는 아직 연결되지 않았으므로 **비활성 + "(준비 중)"**
+ * 으로 남긴다. 눌리는 것처럼 보이는데 아무 일도 없으면 그게 더 나쁜 상태다.
+ *
+ * 제출 버튼은 TDS xlarge(56px / 16px radius / 17px-600)이고 loading 중에도 폭을
+ * 유지한다.
+ */
 function LoginPanel({
   title,
+  description,
   showSocialLogin = false,
   pending = false,
   onSubmit,
@@ -28,69 +40,64 @@ function LoginPanel({
 
   return (
     <form
-      className="flex flex-col gap-6 w-[min(457px,100%)] p-10 bg-w-panel border border-w-line rounded-[20px]"
+      className="flex w-[min(420px,100%)] flex-col gap-6 rounded-panel border border-line bg-canvas p-6 lg:p-8"
       onSubmit={submit}
     >
-      <h2 className="text-[30px] font-normal text-center text-w-ink">{title}</h2>
+      <div className="flex flex-col gap-2">
+        <h2 className="text-h3 text-fg">{title}</h2>
+        {description && <p className="text-bodysm text-muted">{description}</p>}
+      </div>
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-4">
         <TextField
-          label="ID"
-          inputSize="lg"
+          label="이메일"
+          variant="big"
           type="email"
           value={id}
           onChange={(e) => setId(e.target.value)}
+          placeholder="name@company.com"
           autoComplete="username"
           required
         />
         <TextField
-          label="PW"
+          label="비밀번호"
+          variant="big"
           type="password"
-          inputSize="lg"
           value={pw}
           onChange={(e) => setPw(e.target.value)}
+          placeholder="비밀번호를 입력하세요"
           autoComplete="current-password"
           required
         />
       </div>
 
+      <Button type="submit" size="xl" block loading={pending}>
+        로그인
+      </Button>
+
       {showSocialLogin && (
-        <div className="flex flex-col items-center gap-4 pt-5 border-t border-w-line">
-          <span className="text-[18px] text-w-ink">간편로그인 (준비 중)</span>
-          <div className="flex gap-8">
-            <button
-              type="button"
-              disabled
-              className="w-[59px] h-[59px] rounded-full bg-w-social border-0 cursor-not-allowed opacity-50"
-              aria-label="간편로그인 1"
-            />
-            <button
-              type="button"
-              disabled
-              className="w-[59px] h-[59px] rounded-full bg-w-social border-0 cursor-not-allowed opacity-50"
-              aria-label="간편로그인 2"
-            />
-            <button
-              type="button"
-              disabled
-              className="w-[59px] h-[59px] rounded-full bg-w-social border-0 cursor-not-allowed opacity-50"
-              aria-label="간편로그인 3"
-            />
+        <div className="flex flex-col items-center gap-4 border-t border-line pt-6">
+          <span className="text-bodysm text-muted">간편로그인 (준비 중)</span>
+          <div className="flex gap-4">
+            {[1, 2, 3].map((n) => (
+              <button
+                key={n}
+                type="button"
+                disabled
+                className="size-12 rounded-full border border-line bg-surface opacity-40 cursor-not-allowed"
+                aria-label={`간편로그인 ${n} (준비 중)`}
+              />
+            ))}
           </div>
         </div>
       )}
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="p-3 text-[18px] text-w-ink bg-w-field border border-w-line rounded-[10px] cursor-pointer hover:bg-w-row disabled:cursor-progress disabled:opacity-60"
-      >
-        {pending ? '로그인 중…' : '로그인'}
-      </button>
-
-      <div className="flex justify-center gap-10 pt-5 border-t border-w-line text-[15px]">
-        <span className="text-w-placeholder">회원가입 (준비 중)</span>
-        <span className="text-w-placeholder">ID/PW 찾기 (준비 중)</span>
+      <div className="flex justify-center gap-6 border-t border-line pt-6 text-bodysm text-muted">
+        <span>회원가입 (준비 중)</span>
+        <span className="text-line" aria-hidden="true">
+          |
+        </span>
+        <span>아이디 · 비밀번호 찾기 (준비 중)</span>
       </div>
     </form>
   )

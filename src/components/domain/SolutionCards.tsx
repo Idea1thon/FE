@@ -1,21 +1,30 @@
 import { useNavigate } from 'react-router-dom'
 import Card from '../ui/Card'
+import Button from '../ui/Button'
 import { financialProducts } from '../../data/mock'
 import type { FinancialProduct } from '../../data/mock'
 
 interface SolutionCardsProps {
   onSelect?: (product: FinancialProduct) => void
   onLoadMore?: () => void
+  /** Stretch the card to fill a stretched dashboard column. */
   fill?: boolean
 }
 
-const item =
-  'flex flex-col gap-3 p-6 text-left bg-w-row border border-w-line rounded-lg cursor-pointer text-w-ink hover:brightness-[0.97]'
+/**
+ * 맞춤 금융상품 카드. 상품 API 연결 전까지 목데이터를 쓰며, 그 사실을 카드 설명에
+ * 적어 실제 심사 결과처럼 보이지 않게 한다.
+ *
+ * `onSelect` 가 없으면 상세 경로로 직접 이동한다 (dev 동작 유지).
+ */
+const item = [
+  'flex w-full flex-col gap-1.5 rounded-ctl-md border border-line bg-canvas p-4 text-left',
+  'cursor-pointer transition-colors duration-150 hover:border-primary hover:bg-weak/40',
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
+].join(' ')
 
-/** 목데이터 기반 맞춤 금융상품 카드. 상품 API 연결 전 데모 콘텐츠로 사용한다. */
 function SolutionCards({ onSelect, onLoadMore, fill = false }: SolutionCardsProps) {
   const navigate = useNavigate()
-  const [feature, ...rest] = financialProducts
 
   const selectProduct = (product: FinancialProduct) => {
     if (onSelect) {
@@ -26,37 +35,31 @@ function SolutionCards({ onSelect, onLoadMore, fill = false }: SolutionCardsProp
   }
 
   return (
-    <Card title="맞춤 금융상품" fill={fill} className={fill ? 'flex-1' : undefined}>
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <button type="button" className={`${item} justify-start`} onClick={() => selectProduct(feature)}>
-          <span className="text-[20px] font-medium lg:text-[24px]">{feature.name}</span>
-          <span className="text-[16px] leading-[1.4]">{feature.description}</span>
-        </button>
-        <div className="flex flex-col gap-4">
-          {rest.map((product) => (
-            <button
-              key={product.id}
-              type="button"
-              className={`${item} flex-1 basis-0`}
-              onClick={() => selectProduct(product)}
-            >
-              <span className="text-[20px] font-medium lg:text-[24px]">{product.name}</span>
-              <span className="text-[16px] leading-[1.4]">{product.description}</span>
-            </button>
-          ))}
-        </div>
+    <Card
+      title="맞춤 금융상품"
+      description="상품 API 연결 전이라 예시 목록을 보여줍니다."
+      fill={fill}
+      className={fill ? 'flex-1' : undefined}
+    >
+      <div className="flex flex-col gap-3">
+        {financialProducts.map((product) => (
+          <button
+            key={product.id}
+            type="button"
+            className={item}
+            onClick={() => selectProduct(product)}
+          >
+            <span className="text-body font-semibold text-fg">{product.name}</span>
+            <span className="text-bodysm text-muted">{product.description}</span>
+          </button>
+        ))}
       </div>
       {onLoadMore && (
-        <button
-          type="button"
-          className={[
-            'block w-full p-3 text-[18px] text-w-ink bg-transparent border-0 cursor-pointer hover:underline',
-            fill ? 'mt-auto pt-4' : 'mt-4',
-          ].join(' ')}
-          onClick={onLoadMore}
-        >
-          + 더 알아보기
-        </button>
+        <div className={fill ? 'mt-auto pt-4' : 'pt-4'}>
+          <Button variant="ghost" size="md" block onClick={onLoadMore}>
+            더 알아보기
+          </Button>
+        </div>
       )}
     </Card>
   )
