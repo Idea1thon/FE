@@ -21,11 +21,8 @@ interface CandidateView {
   precision: string | null
   confidence: string | null
   hostArea: string | null
-  coordinateLabel: string
-  coordinate: string | null
   fitIndex: number | null
   scoreIsPredictive: boolean
-  entryHealth: string | null
   nearbyAnchors: string[]
   evidence: string[]
   summary: string | null
@@ -138,13 +135,10 @@ function evidenceStrings(value: unknown): string[] {
   return value
     .map((item) => {
       const evidence = record(item)
-      const metric = text(evidence.metric_name)
+      const metricName = text(evidence.metric_name)
+      const metric = friendlyEvidenceMetric(metricName)
       if (!metric) return null
-      const numericValue = finiteNumber(evidence.value)
-      const displayValue =
-        numericValue !== null
-          ? formatNumber(numericValue)
-          : text(evidence.value) ?? toFriendlyLocationEvidence(text(evidence.missing_reason) ?? '미확인')
+      const displayValue = friendlyEvidenceValue(metricName, evidence.value, evidence.missing_reason)
       const unit = text(evidence.unit)
       const grain = text(evidence.spatial_grain)
       const period = text(evidence.period)
@@ -153,6 +147,57 @@ function evidenceStrings(value: unknown): string[] {
     })
     .filter((value): value is string => Boolean(value))
     .slice(0, 6)
+}
+
+function friendlyEvidenceMetric(value: string | null): string | null {
+  if (!value) return null
+  if (/^FC-42_/i.test(value)) return '업종 검색 관심도'
+  if (/^FC-51_(?:뉴스|네이버뉴스)/i.test(value)) return '지역 개발·정비 뉴스 맥락'
+  if (/^[A-Z0-9]+_점포수$/i.test(value)) return '동종 업종 점포 수'
+  if (/^[A-Z0-9]+_점포당매출$/i.test(value)) return '동종 업종 점포당 매출'
+  if (/^반경\d+m_관측_/i.test(value)) {
+    const radius = value.match(/^반경(\d+)m/i)?.[1]
+    return radius ? `반경 ${radius}m 주변 시설 관측 수` : '주변 시설 관측 수'
+  }
+  if (/^active_.*_license_count_500m$/i.test(value)) return '반경 500m 영업 중 인허가 수'
+
+  const labels: Record<string, string> = {
+    유동밀도: '유동 인구 밀도',
+    반경500m_도시철도역수: '반경 500m 도시철도역 수',
+    반경250m_버스정류소수: '반경 250m 버스정류소 수',
+    반경500m_아파트_세대수: '반경 500m 아파트 세대 수',
+    건물_용도군: '건물 용도군',
+    건물_연면적: '건물 연면적',
+    상권_변화_지표: '상권 변화 상태',
+    'R-ONE_임대가격지수': '임대 가격 지수',
+    'R-ONE_공실률': '공실률',
+  }
+  return labels[value] ?? null
+}
+
+function friendlyEvidenceValue(
+  metric: string | null,
+  value: unknown,
+  missingReason: unknown,
+): string | null {
+  if (metric === '상권_변화_지표') {
+    const labels: Record<string, string> = {
+      LL: '다이나믹',
+      LH: '상권 확장',
+      HL: '상권 축소',
+      HH: '정체',
+    }
+    const code = text(value)?.toUpperCase()
+    return (code && labels[code]) ?? toFriendlyLocationEvidence(text(missingReason) ?? '미확인')
+  }
+  const numericValue = finiteNumber(value)
+  if (numericValue !== null) return formatNumber(numericValue)
+  return text(value) ?? toFriendlyLocationEvidence(text(missingReason) ?? '미확인')
+}
+
+function isTemplateSummary(value: unknown): boolean {
+  const summary = text(value)
+  return Boolean(summary?.includes('관측된 근거와 확인되지 않은 조건을 함께 검토해야 합니다.'))
 }
 
 function propertyPath(candidateId: string, runId: string): string {
@@ -170,12 +215,8 @@ function toView(
   const anchor = record(location.anchor)
   const buildingAddress = record(location.building_address)
   const addressPoint = record(location.address_point)
-  const point = record(location.point)
   const hostCommercialArea = record(location.host_commercial_area)
   const dataConfidence = record(raw.data_confidence)
-  const dimensionEvidence = record(raw.dimension_evidence)
-  const entryHealthDimension = record(dimensionEvidence['진입건전성'])
-  const entryHealth = record(entryHealthDimension.entry_health_v1)
 
   const place = text(location.place_name) ?? text(anchor.name)
   const address =
@@ -189,13 +230,6 @@ function toView(
   // 후보의 위치는 주소 필드만 신뢰한다.
   const title = place ?? address ?? `후보 ${index + 1}`
   const detail = address && address !== title ? address : (text(location.admin_dong) ?? '')
-  const pointX = finiteNumber(point.x) ?? finiteNumber(addressPoint.lon)
-  const pointY = finiteNumber(point.y) ?? finiteNumber(addressPoint.lat)
-  const pointCrs = text(point.crs) ?? (pointX !== null && pointY !== null ? 'WGS84' : null)
-  const coordinate =
-    pointX !== null && pointY !== null
-      ? `${formatNumber(pointX)}, ${formatNumber(pointY)}${pointCrs ? ` (${pointCrs})` : ''}`
-      : null
   const hostName = text(hostCommercialArea.name) ?? text(hostCommercialArea.code)
   const hostRelation = text(hostCommercialArea.relation)
   const hostDistance = finiteNumber(hostCommercialArea.distance_m)
@@ -214,11 +248,8 @@ function toView(
     precision: friendlyPrecision(text(location.precision)),
     confidence: friendlyConfidence(text(dataConfidence.level)),
     hostArea,
-    coordinateLabel: point.crs ? '분석 기준 좌표' : '위치 좌표',
-    coordinate,
     fitIndex: finiteNumber(raw.fit_index),
     scoreIsPredictive: raw.score_is_predictive === true,
-    entryHealth: text(entryHealth.grade),
     nearbyAnchors: nearbyAnchorStrings(location.nearby_anchors),
     evidence: evidenceStrings(raw.evidence),
     summary: toFriendlyLocationEvidence(text(explanation?.summary) ?? ''),
@@ -246,6 +277,9 @@ function tierTone(tier: string): 'primary' | 'safe' | 'warn' | 'neutral' {
  * 같은 카드 안에 남긴다 — 추천만 나열하면 판단 근거가 한쪽으로 기운다.
  */
 function LocationResultList({ result }: LocationResultListProps) {
+  const degraded = result.explanations?.degraded === true
+  const explanationMode = text(result.explanations?.explanation_mode)
+  const showExplanationSummary = !degraded && explanationMode !== 'template'
   const explanationCards = Array.isArray(result.explanations?.cards)
     ? result.explanations.cards
         .map((card) => record(card))
@@ -256,7 +290,13 @@ function LocationResultList({ result }: LocationResultListProps) {
   )
   const candidates = result.candidates.map((candidate, index) => {
     const candidateId = text(candidate.candidate_id) ?? `candidate-${index}`
-    return toView(candidate, index, explanationByCandidateId.get(candidateId))
+    const explanation = explanationByCandidateId.get(candidateId)
+    const summary = explanation?.summary
+    return toView(
+      candidate,
+      index,
+      showExplanationSummary && !isTemplateSummary(summary) ? explanation : undefined,
+    )
   })
 
   if (candidates.length === 0) {
@@ -269,8 +309,6 @@ function LocationResultList({ result }: LocationResultListProps) {
       </Card>
     )
   }
-
-  const degraded = result.explanations?.degraded === true
 
   return (
     <section className="flex flex-col gap-4">
@@ -289,12 +327,7 @@ function LocationResultList({ result }: LocationResultListProps) {
       <ul className="flex list-none flex-col gap-4 p-0">
         {candidates.map((c) => (
           <li key={c.id}>
-            <Link
-              to={propertyPath(c.id, result.run_id)}
-              aria-label={`${c.title} 관련 매물 안내 보기`}
-              className="group block rounded-panel focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-            >
-              <article className="flex flex-col gap-4 rounded-panel border border-line bg-canvas p-5 transition-colors duration-150 group-hover:border-primary group-focus-visible:border-primary lg:p-6">
+            <article className="flex flex-col gap-4 rounded-panel border border-line bg-canvas p-5 lg:p-6">
                 <header className="flex items-start gap-4">
                   <span
                     className="num flex size-9 flex-none items-center justify-center rounded-ctl-md bg-weak text-[15px] font-bold text-weak-fg"
@@ -328,7 +361,7 @@ function LocationResultList({ result }: LocationResultListProps) {
                   </div>
                 )}
 
-                {(c.candidateType || c.spatialGrain || c.precision || c.confidence || c.hostArea || c.coordinate || c.fitIndex !== null || c.entryHealth) && (
+                {(c.candidateType || c.spatialGrain || c.precision || c.confidence || c.hostArea || c.fitIndex !== null) && (
                   <dl className="grid grid-cols-1 gap-3 rounded-ctl-md bg-surface p-4 lg:grid-cols-2">
                     {c.candidateType && (
                       <div>
@@ -367,18 +400,6 @@ function LocationResultList({ result }: LocationResultListProps) {
                           {formatNumber(c.fitIndex)}
                           {!c.scoreIsPredictive && <span className="ml-1 text-muted">(예측 점수 아님)</span>}
                         </dd>
-                      </div>
-                    )}
-                    {c.entryHealth && (
-                      <div>
-                        <dt className="text-[12px] text-muted">진입 안정성</dt>
-                        <dd className="mt-1 text-bodysm text-body">{c.entryHealth}</dd>
-                      </div>
-                    )}
-                    {c.coordinate && (
-                      <div className="lg:col-span-2">
-                        <dt className="text-[12px] text-muted">{c.coordinateLabel}</dt>
-                        <dd className="mt-1 break-all text-bodysm text-body">{c.coordinate}</dd>
                       </div>
                     )}
                   </dl>
@@ -462,13 +483,18 @@ function LocationResultList({ result }: LocationResultListProps) {
                 )}
 
                 <div className="flex items-center justify-between gap-4 border-t border-line pt-3 text-bodysm font-semibold text-primary">
-                  <span>{c.candidateType === '실제 매물' ? '매물 상세 확인' : '이 위치의 매물 확인'}</span>
-                  <span aria-hidden="true" className="text-[20px] leading-none transition-transform duration-150 group-hover:translate-x-0.5">
-                    →
-                  </span>
+                  <Link
+                    to={propertyPath(c.id, result.run_id)}
+                    aria-label={`${c.title} ${c.candidateType === '실제 매물' ? '매물 상세' : '위치의 관련 매물'} 확인`}
+                    className="group inline-flex items-center gap-4 rounded-ctl-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  >
+                    <span>{c.candidateType === '실제 매물' ? '매물 상세 확인' : '이 위치의 매물 확인'}</span>
+                    <span aria-hidden="true" className="text-[20px] leading-none transition-transform duration-150 group-hover:translate-x-0.5">
+                      →
+                    </span>
+                  </Link>
                 </div>
               </article>
-            </Link>
           </li>
         ))}
       </ul>

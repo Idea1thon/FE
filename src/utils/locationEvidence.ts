@@ -8,7 +8,7 @@
 export function toFriendlyLocationEvidence(value: string): string | null {
   const cleaned = value
     .replace(/\s*\((?=[^)]*(?:\bFC-\d+[a-z]?(?:-[a-z][a-z0-9_-]*)?\b|\bentry_health_v1\s*=))[^)]*\)/gi, '')
-    .replace(/\bFC-\d+[a-z]?(?:-[a-z][a-z0-9_-]*)?\b/gi, '')
+    .replace(/\bFC-\d+[a-z]?(?:-[a-z][a-z0-9_-]*|_[^\s()[\],.]+)?(?:\s+[a-z][a-z0-9_-]*)?\b/gi, '')
     .replace(/\bentry_health_v1\s*=\s*[-+]?\d+(?:\.\d+)?\b/gi, '')
     .replace(/\s*\[정보\]|\s*\[차단\]/g, '')
     .replace(/약한 배경 신호/g, '주변 참고 정보')
