@@ -2,6 +2,8 @@ import Badge from '../ui/Badge'
 import Card from '../ui/Card'
 import { EmptyState } from '../ui/StateView'
 import type { LocationRecommendationResult } from '../../api'
+import { Link } from 'react-router-dom'
+import { toFriendlyLocationEvidence } from '../../utils/locationEvidence'
 
 interface LocationResultListProps {
   result: LocationRecommendationResult
@@ -24,7 +26,17 @@ function text(value: unknown): string | null {
 
 function strings(value: unknown, limit: number): string[] {
   if (!Array.isArray(value)) return []
-  return value.filter((v): v is string => typeof v === 'string' && !!v.trim()).slice(0, limit)
+  return value
+    .filter((v): v is string => typeof v === 'string' && !!v.trim())
+    .map(toFriendlyLocationEvidence)
+    .filter((v): v is string => Boolean(v))
+    .slice(0, limit)
+}
+
+function propertyPath(candidateId: string, runId: string): string {
+  const params = new URLSearchParams({ candidateId })
+  if (runId) params.set('runId', runId)
+  return `/property?${params.toString()}`
 }
 
 function toView(raw: Record<string, unknown>, index: number): CandidateView {
@@ -48,7 +60,7 @@ function toView(raw: Record<string, unknown>, index: number): CandidateView {
     rank: index + 1,
     title,
     detail,
-    tier: text(raw.fit_tier),
+    tier: toFriendlyLocationEvidence(text(raw.fit_tier) ?? ''),
     reasons: strings(raw.reasons, 3),
     cautions: [...strings(raw.counter_evidence, 2), ...strings(raw.context_notes, 1)],
   }
@@ -102,58 +114,71 @@ function LocationResultList({ result }: LocationResultListProps) {
       <ul className="flex list-none flex-col gap-4 p-0">
         {candidates.map((c) => (
           <li key={c.id}>
-            <article className="flex flex-col gap-4 rounded-panel border border-line bg-canvas p-5 lg:p-6">
-              <header className="flex items-start gap-4">
-                <span
-                  className="num flex size-9 flex-none items-center justify-center rounded-ctl-md bg-weak text-[15px] font-bold text-weak-fg"
-                  aria-hidden="true"
-                >
-                  {c.rank}
-                </span>
-                <div className="min-w-0 flex-auto">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-h4 text-fg">
-                      <span className="sr-only">{c.rank}위 후보 </span>
-                      {c.title}
-                    </h3>
-                    {c.tier && (
-                      <Badge tone={tierTone(c.tier)} size="sm">
-                        {c.tier}
-                      </Badge>
-                    )}
+            <Link
+              to={propertyPath(c.id, result.run_id)}
+              aria-label={`${c.title} 관련 매물 안내 보기`}
+              className="group block rounded-panel focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            >
+              <article className="flex flex-col gap-4 rounded-panel border border-line bg-canvas p-5 transition-colors duration-150 group-hover:border-primary group-focus-visible:border-primary lg:p-6">
+                <header className="flex items-start gap-4">
+                  <span
+                    className="num flex size-9 flex-none items-center justify-center rounded-ctl-md bg-weak text-[15px] font-bold text-weak-fg"
+                    aria-hidden="true"
+                  >
+                    {c.rank}
+                  </span>
+                  <div className="min-w-0 flex-auto">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="text-h4 text-fg">
+                        <span className="sr-only">{c.rank}위 후보 </span>
+                        {c.title}
+                      </h3>
+                      {c.tier && (
+                        <Badge tone={tierTone(c.tier)} size="sm">
+                          {c.tier}
+                        </Badge>
+                      )}
+                    </div>
+                    {c.detail && <p className="mt-1 text-bodysm text-muted">{c.detail}</p>}
                   </div>
-                  {c.detail && <p className="mt-1 text-bodysm text-muted">{c.detail}</p>}
-                </div>
-              </header>
+                </header>
 
-              {c.reasons.length > 0 && (
-                <div className="flex flex-col gap-2">
-                  <p className="text-bodysm font-semibold text-body">관측된 근거</p>
-                  <ul className="flex list-none flex-col gap-2 p-0">
-                    {c.reasons.map((r, i) => (
-                      <li key={i} className="flex gap-2 text-body">
-                        <span className="mt-2 size-1.5 flex-none rounded-full bg-primary" aria-hidden="true" />
-                        <span>{r}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+                {c.reasons.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    <p className="text-bodysm font-semibold text-body">관측된 근거</p>
+                    <ul className="flex list-none flex-col gap-2 p-0">
+                      {c.reasons.map((r, i) => (
+                        <li key={i} className="flex gap-2 text-body">
+                          <span className="mt-2 size-1.5 flex-none rounded-full bg-primary" aria-hidden="true" />
+                          <span>{r}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
 
-              {c.cautions.length > 0 && (
-                <div className="flex flex-col gap-2 rounded-ctl-md bg-surface p-4">
-                  <p className="text-bodysm font-semibold text-body">함께 볼 점</p>
-                  <ul className="flex list-none flex-col gap-2 p-0">
-                    {c.cautions.map((r, i) => (
-                      <li key={i} className="flex gap-2 text-bodysm text-muted">
-                        <span className="mt-1.5 size-1.5 flex-none rounded-full bg-muted" aria-hidden="true" />
-                        <span>{r}</span>
-                      </li>
-                    ))}
-                  </ul>
+                {c.cautions.length > 0 && (
+                  <div className="flex flex-col gap-2 rounded-ctl-md bg-surface p-4">
+                    <p className="text-bodysm font-semibold text-body">함께 볼 점</p>
+                    <ul className="flex list-none flex-col gap-2 p-0">
+                      {c.cautions.map((r, i) => (
+                        <li key={i} className="flex gap-2 text-bodysm text-muted">
+                          <span className="mt-1.5 size-1.5 flex-none rounded-full bg-muted" aria-hidden="true" />
+                          <span>{r}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between gap-4 border-t border-line pt-3 text-bodysm font-semibold text-primary">
+                  <span>관련 매물 확인</span>
+                  <span aria-hidden="true" className="text-[20px] leading-none transition-transform duration-150 group-hover:translate-x-0.5">
+                    →
+                  </span>
                 </div>
-              )}
-            </article>
+              </article>
+            </Link>
           </li>
         ))}
       </ul>

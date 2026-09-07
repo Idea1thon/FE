@@ -124,8 +124,8 @@ function FinancialReportFormPage() {
       <PageHeading
         size="lg"
         backTo="/owner/reports"
-        title={`${periodLabel} 운영보고서 작성`}
-        subtitle="저장하면 위험도 분석이 백그라운드로 실행됩니다. 금액은 원 단위 0 이상 정수입니다."
+        title={`${periodLabel} 운영 보고서 작성`}
+        subtitle="전월 재무 정보를 입력하면 위험도 분석이 시작됩니다. 모든 금액은 원 단위로 입력해 주세요."
         actions={
           <>
             <Select
@@ -142,11 +142,21 @@ function FinancialReportFormPage() {
               disabled={loading || noFields}
               onClick={handleSubmit}
             >
-              저장 및 분석 요청
+              저장하고 분석 시작
             </Button>
           </>
         }
       />
+
+      {submitting && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="mb-6 rounded-ctl-md border border-primary bg-weak px-4 py-3 text-bodysm text-body"
+        >
+          운영 보고서를 저장하고 위험도 분석을 시작하고 있습니다. 잠시만 기다려 주세요.
+        </div>
+      )}
 
       {/* 검증·저장 실패는 폼 위에 둔다 — 아래에 두면 스크롤 밖으로 밀린다. */}
       {error && (
@@ -159,7 +169,7 @@ function FinancialReportFormPage() {
       )}
 
       {loading ? (
-        <Card title="운영보고서 입력">
+        <Card title="운영 보고서 입력">
           <div className="flex flex-col gap-3" role="status" aria-live="polite">
             <span className="sr-only">입력 항목을 불러오는 중</span>
             {Array.from({ length: 6 }, (_, i) => (
@@ -184,9 +194,9 @@ function FinancialReportFormPage() {
       ) : (
         <>
           <p className="mb-4 text-bodysm text-muted">
-            <span className="num font-semibold text-body">{fields.length}</span>개 항목 · 필수{' '}
+            총 <span className="num font-semibold text-body">{fields.length}</span>개 항목 · 필수{' '}
             <span className="num font-semibold text-body">{requiredCount}</span>개(
-            <span className="text-danger">*</span>)
+            <span className="text-danger">*</span> 표시)
           </p>
           <FinancialReportForm
             fields={fields}
@@ -205,7 +215,7 @@ function FinancialReportFormPage() {
               취소
             </Button>
             <Button size="lg" loading={submitting} onClick={handleSubmit}>
-              저장 및 분석 요청
+              저장하고 분석 시작
             </Button>
           </div>
         </>
