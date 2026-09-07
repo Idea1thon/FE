@@ -165,6 +165,49 @@ export const financialProducts: FinancialProduct[] = [
   },
 ]
 
+/** 운영보고서 위험도 상태별로 보여줄 FE 전용 금융상품 목업. */
+export const financialProductsByRisk: Record<RiskLevel, FinancialProduct[]> = {
+  danger: [
+    financialProducts[0],
+    financialProducts[1],
+    financialProducts[2],
+  ],
+  warn: [
+    {
+      id: 'fp-operating-capital',
+      name: '소상공인 운전자금',
+      description: '재료비와 인건비 등 매월 필요한 운영비를 위한 자금',
+    },
+    {
+      id: 'fp-interest-relief',
+      name: '대출 이자 부담 경감 프로그램',
+      description: '기존 대출의 이자 부담을 낮추는 전환·지원 프로그램',
+    },
+    {
+      id: 'fp-credit-guarantee',
+      name: '매출 회복 보증부 대출',
+      description: '매출 회복 기간의 자금 공백을 보완하기 위한 보증 상품',
+    },
+  ],
+  safe: [
+    {
+      id: 'fp-digital-transition',
+      name: '스마트상점 전환 지원금',
+      description: '키오스크와 매장 운영 솔루션 도입을 돕는 지원 상품',
+    },
+    {
+      id: 'fp-growth-capital',
+      name: '점포 성장 지원자금',
+      description: '메뉴 확대와 매장 개선 등 다음 성장을 준비하는 운영자금',
+    },
+    {
+      id: 'fp-energy-efficiency',
+      name: '에너지 효율 개선 지원',
+      description: '고효율 장비 교체로 매장 고정비 절감을 돕는 지원 상품',
+    },
+  ],
+}
+
 export const riskThresholds: { level: RiskLevel; label: string }[] = [
   { level: 'safe', label: '40점 미만: 안전' },
   { level: 'warn', label: '40~69점: 주의' },

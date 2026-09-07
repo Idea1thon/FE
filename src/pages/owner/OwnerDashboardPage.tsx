@@ -51,6 +51,8 @@ function OwnerDashboardPage() {
 
   // 가장 최근에 점수가 산출된 보고서를 대표 값으로 쓴다. 없으면 미확인으로 둔다.
   const latestScore = reports.find((report) => report.risk_score !== null)?.risk_score ?? null
+  const recommendationReport =
+    reports.find((report) => report.status === 'COMPLETED' && report.risk_level !== null) ?? null
 
   const changeSort = (value: string) => {
     setLoading(true)
@@ -84,7 +86,11 @@ function OwnerDashboardPage() {
         right={
           <>
             <StoreSearchCard onSearch={() => navigate('/owner/location-analysis')} />
-            <SolutionCards fill onLoadMore={() => navigate('/finance/all')} />
+            <SolutionCards
+              fill
+              recommendationReport={recommendationReport}
+              onLoadMore={() => navigate('/finance/all')}
+            />
           </>
         }
       />
