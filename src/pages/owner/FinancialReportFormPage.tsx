@@ -10,6 +10,7 @@ import Skeleton from '../../components/ui/Skeleton'
 import { EmptyState, ErrorState } from '../../components/ui/StateView'
 import { ApiError, fetchInputFields, submitReport } from '../../api'
 import type { InputFieldItem } from '../../api'
+import { localizeInputFields } from '../../utils/reportLabels'
 
 const PERIOD_OPTIONS = [
   { value: '2026-09', label: '2026년 09월' },
@@ -48,7 +49,7 @@ function FinancialReportFormPage() {
     fetchInputFields()
       .then((response) => {
         if (!active) return
-        setFields(response.items)
+        setFields(localizeInputFields(response.items))
         setError(null)
       })
       .catch((cause: unknown) => {
