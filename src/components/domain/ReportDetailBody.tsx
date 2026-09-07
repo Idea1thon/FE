@@ -4,6 +4,7 @@ import RiskText from '../ui/RiskText'
 import { EmptyState, WorkingState } from '../ui/StateView'
 import type { ReportDetail, RiskLevel as ApiRiskLevel } from '../../api'
 import type { RiskLevel } from '../ui/RiskText'
+import { localizeReportInput } from '../../utils/reportLabels'
 
 interface ReportDetailBodyProps {
   report: ReportDetail
@@ -115,17 +116,20 @@ function ReportDetailBody({ report, analyzingDescription }: ReportDetailBodyProp
           <EmptyState title="입력된 금액이 없습니다" />
         ) : (
           <div className="grid grid-cols-1 gap-x-8 sm:grid-cols-2 lg:grid-cols-3">
-            {report.inputs.map((input) => (
-              <div
-                key={input.field_code}
-                className="flex items-center justify-between gap-3 border-b border-line py-3"
-              >
-                <span className="min-w-0 text-bodysm text-muted">{input.name}</span>
-                <strong className="num flex-none text-bodysm font-semibold text-fg">
-                  {input.amount.toLocaleString()}
-                </strong>
-              </div>
-            ))}
+            {report.inputs.map((input) => {
+              const localizedInput = localizeReportInput(input)
+              return (
+                <div
+                  key={input.field_code}
+                  className="flex items-center justify-between gap-3 border-b border-line py-3"
+                >
+                  <span className="min-w-0 text-bodysm text-muted">{localizedInput.name}</span>
+                  <strong className="num flex-none text-bodysm font-semibold text-fg">
+                    {input.amount.toLocaleString()}
+                  </strong>
+                </div>
+              )
+            })}
           </div>
         )}
       </Card>

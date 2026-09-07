@@ -1,4 +1,4 @@
-import type { InputFieldItem } from '../api'
+import type { InputFieldItem, ReportInputItem } from '../api'
 
 const FIELD_LABELS: Record<string, string> = {
   HALL_CARD: '신용카드(홀)',
@@ -104,29 +104,43 @@ function normalizeKey(value: string) {
   return value.trim().replaceAll(' ', '_').toUpperCase()
 }
 
+function localizedLabels(codeValue: string, nameValue: string, groupValue: string) {
+  const code = normalizeKey(codeValue)
+  const name = normalizeKey(nameValue)
+  const group = normalizeKey(groupValue)
+  const localizedName = FIELD_LABELS[code] ?? FIELD_LABELS[name] ?? nameValue
+  const localizedGroup =
+    GROUP_BY_FIELD_CODE[code] ?? GROUP_BY_FIELD_CODE[name] ?? GROUP_LABELS[group] ?? groupValue
+
+  return { name: localizedName, group_name: localizedGroup }
+}
+
 function localizedGroupName(field: InputFieldItem) {
-  const code = normalizeKey(field.code)
-  const name = normalizeKey(field.name)
-  const group = normalizeKey(field.group_name)
   return (
-    GROUP_BY_FIELD_CODE[code] ??
-    GROUP_BY_FIELD_CODE[name] ??
-    GROUP_LABELS[group] ??
-    field.group_name
+    localizedLabels(field.code, field.name, field.group_name).group_name
   )
 }
 
 /** API가 영문 라벨을 내려줘도 운영보고서 입력 화면은 한글로 표시한다. */
 export function localizeInputField(field: InputFieldItem): InputFieldItem {
-  const code = normalizeKey(field.code)
-  const name = normalizeKey(field.name)
+  const labels = localizedLabels(field.code, field.name, field.group_name)
   return {
     ...field,
-    name: FIELD_LABELS[code] ?? FIELD_LABELS[name] ?? field.name,
+    name: labels.name,
     group_name: localizedGroupName(field),
   }
 }
 
 export function localizeInputFields(fields: InputFieldItem[]) {
   return fields.map(localizeInputField)
+}
+
+/** 보고서 상세의 입력 금액 항목에도 같은 한글 라벨을 적용한다. */
+export function localizeReportInput(input: ReportInputItem): ReportInputItem {
+  const labels = localizedLabels(input.field_code, input.name, input.group_name)
+  return {
+    ...input,
+    name: labels.name,
+    group_name: labels.group_name,
+  }
 }
