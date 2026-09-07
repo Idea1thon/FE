@@ -3,35 +3,31 @@ import Modal from '../ui/Modal'
 import Button from '../ui/Button'
 import Icon from '../ui/Icon'
 import { useSession } from '../../session/useSession'
-import { currentStore } from '../../data/mock'
 
 interface MyPageModalProps {
   open: boolean
   onClose: () => void
-  /** Fired when 신규 점포 추가 / 점포 삭제 is pressed (enterprise). */
+  /** Fired when 신규 점포 추가 is pressed (enterprise). */
   onAddStore?: () => void
-  onDeleteStore?: () => void
   /** Fired for the owner actions. */
   onManageReports?: () => void
   onCreateReport?: () => void
 }
 
 /**
- * 마이페이지 팝업. 로그인 역할에 따라 신원 블록이 바뀐다 —
- * `enterprise` 는 기업명 / 가맹 점포 수, `owner` 는 점포 정보.
+ * 마이페이지 팝업. 로그인 역할에 따라 신원 블록이 바뀐다.
  *
- * 신원은 `surface` 블록에 얹어 액션 목록과 시각적으로 분리한다. 로그아웃은
- * 되돌리기 쉬운 동작이라 파괴적 톤을 쓰지 않고 조용한 ghost 로 둔다.
+ * 이름은 세션의 실제 사용자 값을 쓴다. 점포 삭제는 API 가 아직 없어 비활성으로 두고
+ * 이유를 라벨과 `title` 에 적는다 — 눌러도 아무 일이 없는 버튼을 두지 않는다.
  */
 function MyPageModal({
   open,
   onClose,
   onAddStore,
-  onDeleteStore,
   onManageReports,
   onCreateReport,
 }: MyPageModalProps) {
-  const { role, logout } = useSession()
+  const { role, user, logout } = useSession()
   const navigate = useNavigate()
 
   const handleLogout = () => {
@@ -39,6 +35,8 @@ function MyPageModal({
     onClose()
     navigate('/login')
   }
+
+  const isOwner = role === 'owner'
 
   return (
     <Modal
@@ -57,27 +55,17 @@ function MyPageModal({
     >
       <div className="flex flex-col gap-5">
         <div className="flex flex-col gap-1 rounded-panel bg-surface p-5">
-          {role === 'owner' ? (
-            <>
-              <p className="text-bodysm text-muted">{currentStore.region}</p>
-              <p className="text-h4 text-fg">{currentStore.name}</p>
-              <p className="text-bodysm text-muted">
-                {currentStore.manager} · 업종명
-              </p>
-            </>
-          ) : (
-            <>
-              <p className="text-bodysm text-muted">업종명</p>
-              <p className="text-h4 text-fg">기업명</p>
-              <p className="text-bodysm text-muted">
-                가맹 점포 <span className="num font-semibold text-body">OO</span>곳
-              </p>
-            </>
-          )}
+          <p className="text-bodysm text-muted">{isOwner ? '사업자 계정' : '본사 계정'}</p>
+          <p className="text-h4 text-fg">{user?.name ?? (isOwner ? '사업자' : '본사')}</p>
+          <p className="text-bodysm text-muted">
+            {isOwner
+              ? '연결된 점포 정보는 운영보고서에서 확인할 수 있습니다.'
+              : '가맹점 현황은 본사 대시보드에서 확인할 수 있습니다.'}
+          </p>
         </div>
 
         <div className="flex flex-col gap-2">
-          {role === 'owner' ? (
+          {isOwner ? (
             <>
               <Button size="lg" block onClick={onManageReports}>
                 운영보고서 관리
@@ -91,8 +79,14 @@ function MyPageModal({
               <Button size="lg" block onClick={onAddStore}>
                 신규 점포 입지 분석
               </Button>
-              <Button variant="secondary" size="lg" block onClick={onDeleteStore}>
-                점포 삭제
+              <Button
+                variant="secondary"
+                size="lg"
+                block
+                disabled
+                title="점포 삭제 API 연결 후 사용할 수 있습니다"
+              >
+                점포 삭제 (준비 중)
               </Button>
             </>
           )}

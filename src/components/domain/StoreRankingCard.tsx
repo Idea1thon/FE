@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import Card from '../ui/Card'
 import Select from '../ui/Select'
 import StoreList from './StoreList'
@@ -31,9 +31,8 @@ interface StoreRankingCardProps {
 /**
  * Dashboard card: 매출 TOP 점포 랭킹 / 집중 관리 필요 점포.
  *
- * The four outcomes — loading, failed, empty, populated — are all explicit, as
- * DESIGN.md §1 asks. Loading uses row-shaped skeletons so the card does not
- * change height when the data lands.
+ * 지역 드롭다운은 서버가 준 목록을 화면에서 걸러낸다 (dev 동작 유지) — 카드에는
+ * 상위 5개만 싣는다. 네 결과(로딩·실패·비어 있음·목록)를 모두 명시한다.
  */
 function StoreRankingCard({
   title,
@@ -50,6 +49,19 @@ function StoreRankingCard({
   emptyDescription,
 }: StoreRankingCardProps) {
   const [region, setRegion] = useState(REGION_OPTIONS[0].value)
+  const visibleStores = useMemo(() => {
+    const filtered = stores.filter((store) => {
+      if (region === 'nation') return true
+      if (region === 'seoul') return store.region.startsWith('서울')
+      if (region === 'gyeonggi') return store.region.startsWith('경기')
+      if (region === 'incheon') return store.region.startsWith('인천')
+      return true
+    })
+    return filtered.slice(0, 5)
+  }, [region, stores])
+
+  // 전국에는 점포가 있는데 고른 지역만 비어 있는 경우를 구분해 알려 준다.
+  const filteredOut = visibleStores.length === 0 && stores.length > 0
 
   return (
     <Card
@@ -72,11 +84,14 @@ function StoreRankingCard({
         <ErrorState message={error} onRetry={onRetry} />
       ) : loading ? (
         <SkeletonRows rows={5} label={`${title} 불러오는 중`} />
-      ) : stores.length === 0 ? (
-        <EmptyState title={emptyTitle} description={emptyDescription} />
+      ) : visibleStores.length === 0 ? (
+        <EmptyState
+          title={filteredOut ? '이 지역에는 해당 점포가 없습니다' : emptyTitle}
+          description={filteredOut ? '지역을 전국으로 바꿔 보세요.' : emptyDescription}
+        />
       ) : (
         <StoreList
-          stores={stores}
+          stores={visibleStores}
           onSelect={onSelect}
           onLoadMore={onLoadMore}
           fill={fill}

@@ -7,7 +7,7 @@ interface LoginPanelProps {
   title: string
   /** One line explaining who this panel is for. */
   description?: string
-  /** Show the 간편로그인 placeholder row (사업자용 only). */
+  /** Show the 간편로그인 row (사업자용 only). Still disabled until wired. */
   showSocialLogin?: boolean
   /** 로그인 요청 진행 중. */
   pending?: boolean
@@ -17,10 +17,11 @@ interface LoginPanelProps {
 /**
  * 로그인 카드 — 기업용 / 사업자용 공통.
  *
- * The submit control is the TDS xlarge button (56px / 16px radius / 17px-600),
- * which DESIGN.md names as the documented default and as the strong touch
- * action. Its loading state preserves width, so the card does not reflow while
- * the request is in flight.
+ * 간편로그인·회원가입·ID/PW 찾기는 아직 연결되지 않았으므로 **비활성 + "(준비 중)"**
+ * 으로 남긴다. 눌리는 것처럼 보이는데 아무 일도 없으면 그게 더 나쁜 상태다.
+ *
+ * 제출 버튼은 TDS xlarge(56px / 16px radius / 17px-600)이고 loading 중에도 폭을
+ * 유지한다.
  */
 function LoginPanel({
   title,
@@ -76,36 +77,27 @@ function LoginPanel({
 
       {showSocialLogin && (
         <div className="flex flex-col items-center gap-4 border-t border-line pt-6">
-          <span className="text-bodysm text-muted">간편로그인</span>
+          <span className="text-bodysm text-muted">간편로그인 (준비 중)</span>
           <div className="flex gap-4">
             {[1, 2, 3].map((n) => (
               <button
                 key={n}
                 type="button"
-                className="size-12 cursor-pointer rounded-full border border-line bg-surface transition-colors duration-150 hover:bg-line/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                aria-label={`간편로그인 ${n}`}
+                disabled
+                className="size-12 rounded-full border border-line bg-surface opacity-40 cursor-not-allowed"
+                aria-label={`간편로그인 ${n} (준비 중)`}
               />
             ))}
           </div>
         </div>
       )}
 
-      <div className="flex justify-center gap-6 border-t border-line pt-6 text-bodysm">
-        <a
-          href="#signup"
-          className="font-medium text-body no-underline transition-colors duration-150 hover:text-primary"
-        >
-          회원가입
-        </a>
+      <div className="flex justify-center gap-6 border-t border-line pt-6 text-bodysm text-muted">
+        <span>회원가입 (준비 중)</span>
         <span className="text-line" aria-hidden="true">
           |
         </span>
-        <a
-          href="#find"
-          className="font-medium text-body no-underline transition-colors duration-150 hover:text-primary"
-        >
-          아이디 · 비밀번호 찾기
-        </a>
+        <span>아이디 · 비밀번호 찾기 (준비 중)</span>
       </div>
     </form>
   )

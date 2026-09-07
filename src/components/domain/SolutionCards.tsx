@@ -1,10 +1,10 @@
+import { useNavigate } from 'react-router-dom'
 import Card from '../ui/Card'
 import Button from '../ui/Button'
 import { financialProducts } from '../../data/mock'
 import type { FinancialProduct } from '../../data/mock'
 
 interface SolutionCardsProps {
-  /** 금융상품명 클릭 시 금융 상품 페이지로 이동. */
   onSelect?: (product: FinancialProduct) => void
   onLoadMore?: () => void
   /** Stretch the card to fill a stretched dashboard column. */
@@ -12,12 +12,10 @@ interface SolutionCardsProps {
 }
 
 /**
- * 추천 금융상품 목록.
+ * 맞춤 금융상품 카드. 상품 API 연결 전까지 목데이터를 쓰며, 그 사실을 카드 설명에
+ * 적어 실제 심사 결과처럼 보이지 않게 한다.
  *
- * Each row is a real activation target, so it gets a hover surface and a focus
- * ring rather than looking like a static tile. The description is kept because
- * DESIGN.md §6 asks for the value to be legible before the person commits to a
- * tap.
+ * `onSelect` 가 없으면 상세 경로로 직접 이동한다 (dev 동작 유지).
  */
 const item = [
   'flex w-full flex-col gap-1.5 rounded-ctl-md border border-line bg-canvas p-4 text-left',
@@ -26,10 +24,20 @@ const item = [
 ].join(' ')
 
 function SolutionCards({ onSelect, onLoadMore, fill = false }: SolutionCardsProps) {
+  const navigate = useNavigate()
+
+  const selectProduct = (product: FinancialProduct) => {
+    if (onSelect) {
+      onSelect(product)
+      return
+    }
+    navigate(`/finance/${product.id}`)
+  }
+
   return (
     <Card
-      title="맞춤 금융 솔루션"
-      description="지금 위험도 구간에 맞춰 고른 상품입니다."
+      title="맞춤 금융상품"
+      description="상품 API 연결 전이라 예시 목록을 보여줍니다."
       fill={fill}
       className={fill ? 'flex-1' : undefined}
     >
@@ -39,18 +47,20 @@ function SolutionCards({ onSelect, onLoadMore, fill = false }: SolutionCardsProp
             key={product.id}
             type="button"
             className={item}
-            onClick={() => onSelect?.(product)}
+            onClick={() => selectProduct(product)}
           >
             <span className="text-body font-semibold text-fg">{product.name}</span>
             <span className="text-bodysm text-muted">{product.description}</span>
           </button>
         ))}
       </div>
-      <div className={fill ? 'mt-auto pt-4' : 'pt-4'}>
-        <Button variant="ghost" size="md" block onClick={onLoadMore}>
-          더 알아보기
-        </Button>
-      </div>
+      {onLoadMore && (
+        <div className={fill ? 'mt-auto pt-4' : 'pt-4'}>
+          <Button variant="ghost" size="md" block onClick={onLoadMore}>
+            더 알아보기
+          </Button>
+        </div>
+      )}
     </Card>
   )
 }
