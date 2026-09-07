@@ -163,6 +163,21 @@ export const financialProducts: FinancialProduct[] = [
     name: '임차료 부담 완화 대출',
     description: '고정비 중 임차료 비중이 높은 사업장을 위한 운영자금',
   },
+  {
+    id: 'fp-operating-capital',
+    name: '소상공인 운전자금',
+    description: '재료비와 인건비 등 매월 필요한 운영비를 위한 자금',
+  },
+  {
+    id: 'fp-interest-relief',
+    name: '대출 이자 부담 경감 프로그램',
+    description: '기존 대출의 이자 부담을 낮추는 전환·지원 프로그램',
+  },
+  {
+    id: 'fp-digital-transition',
+    name: '스마트상점 전환 지원금',
+    description: '키오스크와 매장 운영 솔루션 도입을 돕는 지원 상품',
+  },
 ]
 
 export const riskThresholds: { level: RiskLevel; label: string }[] = [
